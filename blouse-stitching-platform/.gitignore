@@ -1,0 +1,17 @@
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# Gradle & Java
+.gradle/
+build/
+*.class
+*.log
+*.mv.db
+*.trace.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
