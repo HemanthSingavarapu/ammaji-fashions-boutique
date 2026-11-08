@@ -3,7 +3,7 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
 
 echo "Starting Python FastAPI Backend..."
-cd project_backned
+cd project_backend
 ./venv/bin/uvicorn main:app --host 0.0.0.0 --port 8080 --reload &
 BACKEND_PID=$!
 cd "$DIR"

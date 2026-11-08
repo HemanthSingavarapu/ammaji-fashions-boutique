@@ -2,8 +2,8 @@ services:
   - type: web
     name: blouse-backend
     runtime: docker
-    dockerfilePath: blouse-stitching-platform/backend/Dockerfile
-    dockerContext: blouse-stitching-platform/backend
+    dockerfilePath: blouse-stitching-platform/project_backend/Dockerfile
+    dockerContext: blouse-stitching-platform/project_backend
     plan: free
     envVars:
       - key: PORT
