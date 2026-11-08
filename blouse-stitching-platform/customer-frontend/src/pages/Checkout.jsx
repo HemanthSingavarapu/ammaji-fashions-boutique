@@ -269,13 +269,20 @@ function Checkout() {
       if (paymentDetails.cvv.length !== 3) { alert("Please enter a valid 3-digit CVV"); return; }
     } else if (paymentMethod === 'PhonePe') {
       if (paymentDetails.upiId.length < 5 || !paymentDetails.upiId.includes('@')) { alert("Please enter a valid UPI ID (e.g. name@ybl)"); return; }
+    } else if (paymentMethod === 'UPI_QR') {
+      const cleanUtr = (paymentDetails.utr || '').trim().replace(/[^0-9a-zA-Z]/g, '');
+      if (cleanUtr.length < 10) {
+        alert("⚠️ Please enter the valid 12-digit UPI Reference / UTR Number from your payment app (Google Pay, PhonePe, Paytm, BHIM) to confirm your payment.");
+        return;
+      }
     }
 
     setLoading(true);
     try {
       const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       const randCode = Math.floor(100000 + Math.random() * 900000);
-      const txnNumber = paymentDetails.utr && paymentDetails.utr.trim().length > 0 ? paymentDetails.utr.trim() : `TXN-${dateStr}-${randCode}`;
+      const cleanUtr = (paymentDetails.utr || '').trim().replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
+      const txnNumber = paymentMethod === 'UPI_QR' ? cleanUtr : `TXN-${dateStr}-${randCode}`;
 
       let currentOrder = order;
       if (!currentOrder || !currentOrder.id) {
@@ -335,7 +342,7 @@ function Checkout() {
           paidAmount: amountToPayToday,
           paymentType: paymentType,
           balanceAmount: remainingAmount,
-          isUnderReview: false
+          isUnderReview: paymentMethod === 'UPI_QR'
         } 
       });
     } catch (err) {
@@ -771,19 +778,46 @@ function Checkout() {
                       </details>
 
                       <div style={{marginTop: '1.25rem', width: '100%', maxWidth: '380px', textAlign: 'left'}}>
-                        <label className="form-label" style={{fontSize: '0.85rem', marginBottom: '0.35rem'}}>
-                          UPI Ref / UTR No. (Optional):
+                        <label className="form-label" style={{fontSize: '0.88rem', marginBottom: '0.35rem', fontWeight: 700, color: 'var(--text-main)'}}>
+                          12-Digit UPI Ref / UTR Number <span style={{color: 'red'}}>*</span>:
                         </label>
                         <input 
                           type="text" 
                           className="form-control" 
-                          placeholder="Enter UTR or leave blank to auto-generate" 
+                          placeholder="e.g. 408912345678 (12 digits)" 
+                          maxLength={18}
                           value={paymentDetails.utr} 
-                          onChange={(e) => setPaymentDetails({...paymentDetails, utr: e.target.value})} 
+                          onChange={(e) => setPaymentDetails({...paymentDetails, utr: e.target.value.replace(/[^0-9a-zA-Z]/g, '')})} 
+                          style={{
+                            fontSize: '0.95rem', 
+                            fontFamily: 'monospace', 
+                            letterSpacing: '1px', 
+                            border: '2px solid #CBD5E1',
+                            padding: '0.65rem 0.85rem'
+                          }}
+                          required
                         />
-                        <p style={{fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.35rem', marginBottom: '1.25rem'}}>
-                          ⚡ A unique Transaction ID will be automatically generated upon payment.
-                        </p>
+
+                        {/* Visual guide on where to find UTR */}
+                        <div style={{
+                          background: '#EFF6FF', 
+                          border: '1px solid #BFDBFE', 
+                          borderRadius: '6px', 
+                          padding: '0.6rem 0.75rem', 
+                          marginTop: '0.5rem', 
+                          marginBottom: '1.25rem', 
+                          fontSize: '0.78rem', 
+                          color: '#1E40AF', 
+                          lineHeight: 1.45
+                        }}>
+                          <div style={{fontWeight: 700, marginBottom: '0.2rem'}}>💡 Where to find your 12-digit UTR in payment apps:</div>
+                          <div>• <strong>Google Pay:</strong> View receipt → <em>"UPI transaction ID"</em></div>
+                          <div>• <strong>PhonePe:</strong> View receipt → <em>"UTR"</em></div>
+                          <div>• <strong>Paytm:</strong> View receipt → <em>"UPI Ref No"</em></div>
+                          <div style={{marginTop: '0.25rem', fontSize: '0.73rem', color: '#6B7280'}}>
+                            🔒 Our boutique team verifies this 12-digit UTR against our bank account to confirm your order.
+                          </div>
+                        </div>
 
                         <button 
                           type="button"
@@ -795,7 +829,7 @@ function Checkout() {
                             borderColor: '#16A34A', 
                             color: '#ffffff', 
                             padding: '1rem 1.25rem', 
-                            fontSize: '1.1rem', 
+                            fontSize: '1.05rem', 
                             fontWeight: 'bold', 
                             borderRadius: '8px', 
                             display: 'flex', 
@@ -807,7 +841,7 @@ function Checkout() {
                           }} 
                           disabled={loading}
                         >
-                          {loading ? 'Confirming Payment...' : `✓ I Have Paid ₹${amountToPayToday} — Complete Order`}
+                          {loading ? 'Submitting Payment Proof...' : `✓ I Have Paid ₹${amountToPayToday} — Submit Order`}
                         </button>
                       </div>
                     </div>
@@ -838,16 +872,20 @@ function Checkout() {
               )}
             </div>
             
-            <div style={{textAlign: 'center', marginTop: '3rem'}}>
-              <p style={{marginBottom: '1.5rem'}}>
-                Pay <strong>₹{amountToPayToday}</strong> ({paymentType === 'ADVANCE_20' ? '20% Advance' : 'Full Payment'}) via {paymentMethod}
-              </p>
+            <div style={{textAlign: 'center', marginTop: '2.5rem'}}>
+              {paymentMethod !== 'UPI_QR' && (
+                <p style={{marginBottom: '1.25rem'}}>
+                  Pay <strong>₹{amountToPayToday}</strong> ({paymentType === 'ADVANCE_20' ? '20% Advance' : 'Full Payment'}) via {paymentMethod}
+                </p>
+              )}
               <div style={{display: 'flex', gap: '1.5rem', justifyContent: 'center'}}>
-                <button onClick={() => handlePayment(true)} className="btn btn-primary" style={{backgroundColor: 'var(--success-color)', padding: '1rem 2rem'}} disabled={loading}>
-                  {loading ? 'Processing...' : (paymentMethod === 'UPI_QR' ? `✓ I Have Paid ₹${amountToPayToday} — Place Order` : `Pay ₹${amountToPayToday}`)}
-                </button>
-                <button onClick={() => handlePayment(false)} className="btn btn-primary" style={{backgroundColor: 'var(--error-color)', padding: '1rem 2rem'}} disabled={loading}>
-                  Cancel
+                {paymentMethod !== 'UPI_QR' && (
+                  <button onClick={() => handlePayment(true)} className="btn btn-primary" style={{backgroundColor: 'var(--success-color)', padding: '1rem 2rem'}} disabled={loading}>
+                    {loading ? 'Processing...' : `Pay ₹${amountToPayToday}`}
+                  </button>
+                )}
+                <button onClick={() => handlePayment(false)} className="btn btn-outline" style={{borderColor: 'var(--error-color)', color: 'var(--error-color)', padding: '0.85rem 2rem'}} disabled={loading}>
+                  ✕ Cancel Order
                 </button>
               </div>
             </div>

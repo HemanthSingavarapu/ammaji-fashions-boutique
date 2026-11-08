@@ -38,15 +38,18 @@ def submit_utr(
 ):
     """
     Production-grade UTR submission endpoint:
-    - Generates unique Transaction ID if not manually entered
+    - Enforces mandatory 10-18 char UTR (standard 12-digit UPI reference)
     - Prevents replay attacks (duplicate UTRs)
-    - Sets order to UNDER_REVIEW
+    - Sets order to UNDER_REVIEW so users cannot fake payment
     """
-    utr = request.utrNumber.strip().upper() if request.utrNumber else ""
-    if not utr or len(utr) < 6:
-        date_str = datetime.now().strftime("%Y%m%d")
-        rand_code = random.randint(100000, 999999)
-        utr = f"TXN-{date_str}-{rand_code}"
+    raw_utr = request.utrNumber.strip() if request.utrNumber else ""
+    clean_utr = re.sub(r'[^a-zA-Z0-9]', '', raw_utr).upper()
+
+    if not clean_utr or len(clean_utr) < 10:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A valid 12-digit UPI Reference / UTR Number is required from your payment receipt (Google Pay, PhonePe, Paytm, BHIM)."
+        )
 
     order = db.query(models.Order).filter(models.Order.id == request.orderId).first()
     if not order:
@@ -54,15 +57,15 @@ def submit_utr(
 
     # Anti-Replay Check: Ensure this UTR was not already accepted or submitted for a different order
     existing_txn = db.query(models.Payment).filter(
-        models.Payment.paymentReference == utr,
+        models.Payment.paymentReference == clean_utr,
         models.Payment.orderId != order.id,
         models.Payment.status.in_(["UNDER_REVIEW", "SUCCESS"])
     ).first()
     if existing_txn:
-        # If generated or entered was somehow duplicate, generate fresh unique
-        date_str = datetime.now().strftime("%Y%m%d")
-        rand_code = random.randint(100000, 999999)
-        utr = f"TXN-{date_str}-{rand_code}"
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"This UPI Reference / UTR ({clean_utr}) was already submitted for another order. Replay of used UTRs is not permitted."
+        )
 
     # Server-side amount enforcement
     effective_payment_type = request.paymentType or order.paymentType or "ADVANCE_20"
@@ -75,9 +78,9 @@ def submit_utr(
     order.paymentType = effective_payment_type
     order.paidAmount = expected_paid
     order.balanceAmount = expected_balance
-    order.transactionNumber = utr
-    order.paymentStatus = "SUCCESS"
-    order.orderStatus = "PAYMENT_CONFIRMED"
+    order.transactionNumber = clean_utr
+    order.paymentStatus = "UNDER_REVIEW"
+    order.orderStatus = "PAYMENT_UNDER_REVIEW"
 
     # Create or update payment record
     payment = db.query(models.Payment).filter(models.Payment.orderId == order.id).first()
@@ -86,22 +89,22 @@ def submit_utr(
             orderId=order.id,
             amount=expected_paid,
             paymentMethod="UPI_TRANSFER",
-            paymentReference=utr,
-            status="SUCCESS"
+            paymentReference=clean_utr,
+            status="UNDER_REVIEW"
         )
         db.add(payment)
     else:
         payment.amount = expected_paid
         payment.paymentMethod = "UPI_TRANSFER"
-        payment.paymentReference = utr
-        payment.status = "SUCCESS"
+        payment.paymentReference = clean_utr
+        payment.status = "UNDER_REVIEW"
         payment.rejectionReason = None
 
     # Audit history log
     history = models.OrderStatusHistory(
         orderId=order.id,
-        status="PAYMENT_CONFIRMED",
-        comment=f"Payment successful via UPI (₹{expected_paid}). Transaction Reference: {utr}. Order placed successfully!",
+        status="PAYMENT_UNDER_REVIEW",
+        comment=f"Customer submitted UPI Payment Proof (₹{expected_paid}) with UTR: {clean_utr}. Awaiting boutique owner bank verification.",
         updatedBy="CUSTOMER"
     )
     db.add(history)

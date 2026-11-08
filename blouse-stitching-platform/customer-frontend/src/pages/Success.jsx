@@ -69,13 +69,15 @@ function Success() {
     year: 'numeric'
   });
 
+  const isUnderReview = order?.paymentStatus === 'UNDER_REVIEW' || location.state?.isUnderReview;
+
   return (
     <div className="section container" style={{maxWidth: '750px', paddingBottom: '4rem'}}>
       
       {/* Top Banner */}
       <div style={{
-        background: '#ECFDF5', 
-        border: '1px solid #A7F3D0', 
+        background: isUnderReview ? '#FEFCE8' : '#ECFDF5', 
+        border: `1px solid ${isUnderReview ? '#FEF08A' : '#A7F3D0'}`, 
         borderRadius: '12px', 
         padding: '1.25rem 1.75rem', 
         marginBottom: '1.75rem',
@@ -87,7 +89,7 @@ function Success() {
       }}>
         <div style={{display: 'flex', alignItems: 'center', gap: '0.85rem'}}>
           <div style={{
-            background: '#10B981', 
+            background: isUnderReview ? '#EAB308' : '#10B981', 
             color: '#fff', 
             borderRadius: '50%', 
             width: '40px', 
@@ -97,15 +99,19 @@ function Success() {
             justifyContent: 'center',
             fontSize: '1.3rem',
             fontWeight: 'bold'
-          }}>✓</div>
+          }}>
+            {isUnderReview ? '⏳' : '✓'}
+          </div>
           <div>
-            <h3 style={{margin: 0, color: '#065F46', fontSize: '1.25rem', fontWeight: 800}}>
-              Payment Successful & Order Placed! 🎉
+            <h3 style={{margin: 0, color: isUnderReview ? '#854D0E' : '#065F46', fontSize: '1.25rem', fontWeight: 800}}>
+              {isUnderReview ? 'Order Placed & Payment Under Review ⏳' : 'Payment Confirmed & Order Placed! 🎉'}
             </h3>
-            <p style={{margin: '0.15rem 0 0 0', color: '#047857', fontSize: '0.9rem'}}>
-              {isAdvance 
-                ? `Thank you! 20% advance booking payment of ₹${paidAmount} received. Order #${order.orderNumber} is confirmed.`
-                : `Thank you! Full payment of ₹${paidAmount} received. Order #${order.orderNumber} is confirmed.`}
+            <p style={{margin: '0.15rem 0 0 0', color: isUnderReview ? '#A16207' : '#047857', fontSize: '0.9rem'}}>
+              {isUnderReview 
+                ? `Thank you! 12-digit UPI Reference #${transactionNumber} submitted. Our boutique team will cross-check the transfer in our bank statement and confirm your stitching slot.`
+                : (isAdvance 
+                    ? `Thank you! 20% advance booking payment of ₹${paidAmount} received. Order #${order.orderNumber} is confirmed.`
+                    : `Thank you! Full payment of ₹${paidAmount} received. Order #${order.orderNumber} is confirmed.`)}
             </p>
           </div>
         </div>
@@ -185,8 +191,15 @@ function Success() {
           </div>
           <div>
             <span style={{color: 'var(--text-muted)'}}>Status: </span>
-            <span style={{background: '#DCFCE7', color: '#166534', padding: '0.2rem 0.55rem', borderRadius: '4px', fontWeight: 600, fontSize: '0.8rem'}}>
-              PAID ({isAdvance ? '20% Advance' : 'Full Payment'})
+            <span style={{
+              background: isUnderReview ? '#FEF3C7' : '#DCFCE7', 
+              color: isUnderReview ? '#92400E' : '#166534', 
+              padding: '0.2rem 0.6rem', 
+              borderRadius: '4px', 
+              fontWeight: 700, 
+              fontSize: '0.8rem'
+            }}>
+              {isUnderReview ? '⏳ PAYMENT UNDER REVIEW' : `PAID (${isAdvance ? '20% Advance' : 'Full Payment'})`}
             </span>
           </div>
         </div>

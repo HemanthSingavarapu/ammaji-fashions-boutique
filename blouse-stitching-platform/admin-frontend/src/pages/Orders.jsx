@@ -83,6 +83,31 @@ function Orders() {
     return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   };
 
+  const handleApprovePayment = async (orderId) => {
+    if (!window.confirm("Confirm that this payment has been received in your Federal Bank / UPI statement?")) return;
+    try {
+      await api.put(`/admin/orders/${orderId}/verify-payment`);
+      alert("✓ Payment approved & confirmed successfully!");
+      fetchOrders();
+      if (showDetailModal) setShowDetailModal(false);
+    } catch (err) {
+      alert("Failed to verify payment: " + (err.response?.data?.detail || err.message));
+    }
+  };
+
+  const handleRejectPayment = async (orderId) => {
+    const reason = window.prompt("Enter rejection reason (customer will see this):", "UTR reference not found in bank statement");
+    if (!reason) return;
+    try {
+      await api.put(`/admin/orders/${orderId}/reject-payment?reason=${encodeURIComponent(reason)}`);
+      alert("Payment rejected.");
+      fetchOrders();
+      if (showDetailModal) setShowDetailModal(false);
+    } catch (err) {
+      alert("Failed to reject payment: " + (err.response?.data?.detail || err.message));
+    }
+  };
+
   const exportToCSV = () => {
     if (orders.length === 0) {
       alert("No orders to export.");
@@ -254,9 +279,24 @@ function Orders() {
                       <strong style={{color: 'var(--text-main)'}}>₹{order.amount}</strong>
                     </td>
                     <td>
-                      <span className={`badge ${order.paymentStatus === 'SUCCESS' ? 'badge-success' : 'badge-warning'}`}>
-                        {order.paymentStatus || 'PENDING'}
-                      </span>
+                      {order.paymentStatus === 'SUCCESS' ? (
+                        <span className="badge badge-success">✓ SUCCESS</span>
+                      ) : order.paymentStatus === 'UNDER_REVIEW' ? (
+                        <div>
+                          <span className="badge" style={{background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', display: 'inline-block'}}>
+                            ⏳ REVIEW NEEDED
+                          </span>
+                          {order.transactionNumber && (
+                            <div style={{fontSize: '0.72rem', fontFamily: 'monospace', color: '#B45309', marginTop: '3px', fontWeight: 600}}>
+                              UTR: {order.transactionNumber}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className={`badge ${order.paymentStatus === 'REJECTED' ? 'badge-warning' : 'badge-warning'}`} style={order.paymentStatus === 'REJECTED' ? {background: '#FEE2E2', color: '#991B1B'} : {}}>
+                          {order.paymentStatus || 'PENDING'}
+                        </span>
+                      )}
                     </td>
                     <td>
                       <span className={`badge ${
@@ -269,6 +309,26 @@ function Orders() {
                     </td>
                     <td style={{textAlign: 'right'}}>
                       <div style={{display: 'inline-flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end'}}>
+                        {order.paymentStatus === 'UNDER_REVIEW' && (
+                          <>
+                            <button 
+                              className="btn btn-primary" 
+                              onClick={() => handleApprovePayment(order.id)}
+                              style={{padding: '0.35rem 0.6rem', fontSize: '0.78rem', backgroundColor: '#16A34A', borderColor: '#16A34A'}}
+                              title="Approve & Verify UPI Payment"
+                            >
+                              ✓ Approve
+                            </button>
+                            <button 
+                              className="btn btn-outline" 
+                              onClick={() => handleRejectPayment(order.id)}
+                              style={{padding: '0.35rem 0.55rem', fontSize: '0.78rem', borderColor: '#DC2626', color: '#DC2626'}}
+                              title="Reject Fake / Unpaid Payment"
+                            >
+                              ✗ Reject
+                            </button>
+                          </>
+                        )}
                         <a 
                           href={`http://localhost:8080/api/orders/${order.id}/job-card`}
                           target="_blank" 
@@ -434,6 +494,38 @@ function Orders() {
                   <div style={{fontSize: '0.85rem', color: '#B45309', fontWeight: 600}}>Refund: {detailOrder.refundStatus}</div>
                 )}
               </div>
+
+              {detailOrder.paymentStatus === 'UNDER_REVIEW' && (
+                <div style={{gridColumn: '1 / -1', background: '#FEFCE8', border: '1px solid #FEF08A', borderRadius: '6px', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem'}}>
+                  <div>
+                    <div style={{fontWeight: 700, color: '#854D0E', fontSize: '0.95rem'}}>
+                      ⏳ Payment Verification Required
+                    </div>
+                    <div style={{fontSize: '0.85rem', color: '#A16207', marginTop: '0.2rem'}}>
+                      Customer submitted 12-digit UPI UTR: <strong style={{fontFamily: 'monospace', fontSize: '1.05rem', color: '#1E3A8A'}}>{detailOrder.transactionNumber}</strong>
+                    </div>
+                    <div style={{fontSize: '0.8rem', color: '#713F12', marginTop: '0.1rem'}}>
+                      Expected in Federal Bank account: <strong>₹{detailOrder.paidAmount}</strong>
+                    </div>
+                  </div>
+                  <div style={{display: 'flex', gap: '0.5rem'}}>
+                    <button 
+                      onClick={() => handleApprovePayment(detailOrder.id)} 
+                      className="btn btn-primary" 
+                      style={{backgroundColor: '#16A34A', borderColor: '#16A34A', padding: '0.5rem 1rem', fontSize: '0.85rem'}}
+                    >
+                      ✓ Approve Payment
+                    </button>
+                    <button 
+                      onClick={() => handleRejectPayment(detailOrder.id)} 
+                      className="btn btn-outline" 
+                      style={{borderColor: '#DC2626', color: '#DC2626', padding: '0.5rem 1rem', fontSize: '0.85rem'}}
+                    >
+                      ✗ Reject
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div style={{gridColumn: '1 / -1', borderTop: '1px solid var(--border)', paddingTop: '1rem'}}>
                 <div style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>DESIGN / PRODUCT</div>
