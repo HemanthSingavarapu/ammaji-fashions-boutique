@@ -9,12 +9,12 @@ class Settings:
     PORT: int = int(os.getenv("PORT", "8080"))
 
     # --- Feature 2: Bank & UPI Payment Details (Update these anytime!) ---
-    UPI_VPA: str = os.getenv("UPI_VPA", "boutique@upi")
-    UPI_PAYEE_NAME: str = os.getenv("UPI_PAYEE_NAME", "Ammaji Fashions & Boutique")
-    BANK_NAME: str = os.getenv("BANK_NAME", "HDFC Bank")
-    BANK_ACCOUNT_NO: str = os.getenv("BANK_ACCOUNT_NO", "50100234567890")
-    BANK_IFSC: str = os.getenv("BANK_IFSC", "HDFC0001234")
-    BANK_BRANCH: str = os.getenv("BANK_BRANCH", "Hyderabad Main Branch")
+    UPI_VPA: str = os.getenv("UPI_VPA", "ammajifashions@upi")
+    UPI_PAYEE_NAME: str = os.getenv("UPI_PAYEE_NAME", "Ammaji Fashions")
+    BANK_NAME: str = os.getenv("BANK_NAME", "Federal Bank")
+    BANK_ACCOUNT_NO: str = os.getenv("BANK_ACCOUNT_NO", "77770113307348")
+    BANK_IFSC: str = os.getenv("BANK_IFSC", "FDRL0007777")
+    BANK_BRANCH: str = os.getenv("BANK_BRANCH", "Mumbai Main Branch")
 
     # --- Feature 5: WhatsApp & Email Notifications ---
     BOUTIQUE_PHONE: str = os.getenv("BOUTIQUE_PHONE", "918341085629") # WhatsApp number for boutique
