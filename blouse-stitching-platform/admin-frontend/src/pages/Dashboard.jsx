@@ -17,7 +17,7 @@ function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if(!localStorage.getItem('adminToken')) {
+    if (!sessionStorage.getItem('adminToken') && !localStorage.getItem('adminToken')) {
         navigate('/login');
         return;
     }

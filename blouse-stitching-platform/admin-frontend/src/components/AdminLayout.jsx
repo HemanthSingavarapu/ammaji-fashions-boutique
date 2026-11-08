@@ -15,7 +15,12 @@ function AdminLayout() {
 
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to sign out from the Admin Panel?")) {
-      localStorage.removeItem('adminToken');
+      sessionStorage.removeItem('adminToken');
+      sessionStorage.removeItem('adminUser');
+      try {
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUser');
+      } catch (e) {}
       navigate('/login');
     }
   };

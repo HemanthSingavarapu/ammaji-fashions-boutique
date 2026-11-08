@@ -23,8 +23,9 @@ function Login() {
       
       // Ensure user is an admin
       if (res.data.user.role === 'ADMIN') {
-        localStorage.setItem('adminToken', res.data.token);
-        localStorage.setItem('adminUser', JSON.stringify(res.data.user));
+        sessionStorage.setItem('adminToken', res.data.token);
+        sessionStorage.setItem('adminUser', JSON.stringify(res.data.user));
+        try { localStorage.removeItem('adminToken'); localStorage.removeItem('adminUser'); } catch (e) {}
         navigate('/');
       } else {
         setError('Unauthorized access. Admin privileges required.');
@@ -35,8 +36,9 @@ function Login() {
         await api.post('/auth/setup-admin');
         const retryRes = await api.post('/auth/login', { email: cleanEmail, password: cleanPassword });
         if (retryRes.data.user.role === 'ADMIN') {
-          localStorage.setItem('adminToken', retryRes.data.token);
-          localStorage.setItem('adminUser', JSON.stringify(retryRes.data.user));
+          sessionStorage.setItem('adminToken', retryRes.data.token);
+          sessionStorage.setItem('adminUser', JSON.stringify(retryRes.data.user));
+          try { localStorage.removeItem('adminToken'); localStorage.removeItem('adminUser'); } catch (e) {}
           navigate('/');
           return;
         }
