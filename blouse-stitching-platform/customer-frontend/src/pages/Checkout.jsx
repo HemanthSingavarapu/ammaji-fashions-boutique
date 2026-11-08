@@ -79,6 +79,17 @@ function Checkout() {
   const [paymentType, setPaymentType] = useState('ADVANCE_20'); // 'ADVANCE_20' or 'FULL'
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
   const [courierOption, setCourierOption] = useState('SELF'); // 'SELF' or 'BOUTIQUE'
+  const [copiedText, setCopiedText] = useState('');
+
+  const handleCopy = (text, label) => {
+    try {
+      navigator.clipboard.writeText(text);
+      setCopiedText(label);
+      setTimeout(() => setCopiedText(''), 2500);
+    } catch (e) {
+      console.warn("Clipboard copy error:", e);
+    }
+  };
   
   // Customizations
   const [addons, setAddons] = useState({
@@ -273,13 +284,29 @@ function Checkout() {
 
       let finalTxnNumber = txnNumber;
       if (paymentMethod === 'UPI_QR') {
-        const payRes = await api.post('/payments/submit-utr', {
-          orderId: currentOrder.id,
-          utrNumber: txnNumber,
-          paymentType: paymentType
-        });
-        if (payRes.data?.paymentReference) {
-          finalTxnNumber = payRes.data.paymentReference;
+        try {
+          const payRes = await api.post('/payments/submit-utr', {
+            orderId: currentOrder.id,
+            utrNumber: txnNumber,
+            paymentType: paymentType
+          });
+          if (payRes.data?.paymentReference) {
+            finalTxnNumber = payRes.data.paymentReference;
+          }
+        } catch (qrErr) {
+          if (qrErr.response?.status === 404) {
+            currentOrder = await createOrderCall();
+            const retryRes = await api.post('/payments/submit-utr', {
+              orderId: currentOrder.id,
+              utrNumber: txnNumber,
+              paymentType: paymentType
+            });
+            if (retryRes.data?.paymentReference) {
+              finalTxnNumber = retryRes.data.paymentReference;
+            }
+          } else {
+            throw qrErr;
+          }
         }
       } else {
         try {
@@ -313,8 +340,20 @@ function Checkout() {
       });
     } catch (err) {
       console.error("Payment error:", err);
-      const msg = err.response?.data?.message || (typeof err.response?.data === 'string' ? err.response?.data : null) || "Payment processing error. Please try again.";
-      alert(msg);
+      const detail = err.response?.data?.detail;
+      let msg = "";
+      if (typeof detail === 'string') {
+        msg = detail;
+      } else if (Array.isArray(detail)) {
+        msg = detail.map(d => d.msg || (typeof d === 'string' ? d : JSON.stringify(d))).join(", ");
+      } else if (err.response?.data?.message) {
+        msg = err.response.data.message;
+      } else if (typeof err.response?.data === 'string') {
+        msg = err.response.data;
+      } else {
+        msg = err.message || "Payment processing error. Please try again.";
+      }
+      alert(`Payment Notice: ${msg}`);
       setLoading(false);
     }
   };
@@ -632,94 +671,149 @@ function Checkout() {
 
             {/* Payment Details Form */}
             <div style={{marginBottom: '2rem'}}>
-              {paymentMethod === 'UPI_QR' ? (
-                <div style={{
-                  background: 'var(--bg-surface-elevated)', 
-                  border: '2px dashed var(--primary-color)', 
-                  borderRadius: '12px', 
-                  padding: '2rem 1.5rem', 
-                  textAlign: 'center'
-                }}>
-                  <h4 style={{margin: '0 0 0.4rem 0', color: 'var(--primary-color)'}}>
-                    Scan with Any UPI App to Pay ₹{amountToPayToday}
-                  </h4>
-                  <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem'}}>
-                    Open GPay, PhonePe, Paytm, BHIM, or any banking app and scan this QR code
-                  </p>
+              {paymentMethod === 'UPI_QR' ? (() => {
+                const displayVpa = (upiData?.vpa || 'ammajifashions@upi').trim();
+                const displayPayee = (upiData?.payeeName || 'Ammaji Fashions').trim();
+                const safePayee = displayPayee.replace(/[^a-zA-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+                const safeNote = `Order-${order?.orderNumber || 'NEW_ORDER'}`;
+                const upiUri = upiData?.upiString || `upi://pay?pa=${displayVpa}&pn=${encodeURIComponent(safePayee)}&am=${amountToPayToday.toFixed(2)}&cu=INR&tn=${encodeURIComponent(safeNote)}`;
+                const qrImageSrc = upiData?.qrCodeDataUrl || `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUri)}`;
 
-                  {upiData?.qrCodeDataUrl ? (
+                return (
+                  <div style={{
+                    background: 'var(--bg-surface-elevated)', 
+                    border: '2px dashed var(--primary-color)', 
+                    borderRadius: '12px', 
+                    padding: '2rem 1.5rem', 
+                    textAlign: 'center'
+                  }}>
+                    <h4 style={{margin: '0 0 0.4rem 0', color: 'var(--primary-color)'}}>
+                      Scan with Any UPI App to Pay ₹{amountToPayToday}
+                    </h4>
+                    <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem'}}>
+                      Open GPay, PhonePe, Paytm, BHIM, or any banking app and scan this QR code
+                    </p>
+
+                    {/* Step-by-Step Payment Instructions Banner */}
+                    <div style={{
+                      background: '#F0FDF4', 
+                      border: '1px solid #BBF7D0', 
+                      borderRadius: '8px', 
+                      padding: '0.85rem 1rem', 
+                      marginBottom: '1.25rem', 
+                      textAlign: 'left', 
+                      fontSize: '0.85rem', 
+                      color: '#166534',
+                      maxWidth: '440px',
+                      margin: '0 auto 1.25rem auto'
+                    }}>
+                      <div style={{fontWeight: 700, marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.4rem'}}>
+                        <span>📋</span> Quick 3-Step Payment Process:
+                      </div>
+                      <ol style={{margin: '0 0 0 1.2rem', padding: 0, lineHeight: 1.6}}>
+                        <li><strong>Scan</strong> this QR code using GPay, PhonePe, Paytm, or BHIM.</li>
+                        <li><strong>Pay ₹{amountToPayToday}</strong> ({paymentType === 'ADVANCE_20' ? '20% Advance' : 'Full Payment'}) on your phone.</li>
+                        <li><strong>Click</strong> the green button below: <em>"✓ I Have Paid ₹{amountToPayToday} — Complete Order"</em>.</li>
+                      </ol>
+                    </div>
+
                     <div style={{display: 'inline-block', background: '#FFFFFF', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)'}}>
                       <img 
-                        src={upiData.qrCodeDataUrl} 
+                        src={qrImageSrc} 
                         alt="UPI QR Code" 
                         style={{width: '200px', height: '200px', display: 'block'}} 
                       />
                     </div>
-                  ) : (
-                    <div style={{padding: '2rem', color: 'var(--text-muted)'}}>Generating UPI QR Code...</div>
-                  )}
 
-                  <div style={{marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', alignItems: 'center'}}>
-                    <div style={{fontSize: '0.95rem', fontWeight: 600}}>
-                      UPI ID: <span style={{color: 'var(--primary-color)', fontFamily: 'monospace', fontSize: '1.05rem', background: '#FFF', padding: '3px 8px', borderRadius: '4px', border: '1px solid #DDD'}}>{upiData?.vpa || 'boutique@upi'}</span>
-                    </div>
-                    <div style={{fontSize: '0.85rem', color: 'var(--text-muted)'}}>
-                      Payee: <strong>{upiData?.payeeName || 'Ammaji Fashions & Boutique'}</strong>
-                    </div>
+                    <div style={{marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center'}}>
+                      <div style={{fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center'}}>
+                        <span>UPI ID:</span>
+                        <span style={{color: 'var(--primary-color)', fontFamily: 'monospace', fontSize: '1.05rem', background: '#FFF', padding: '3px 8px', borderRadius: '4px', border: '1px solid #DDD'}}>{displayVpa}</span>
+                        <button 
+                          type="button" 
+                          onClick={() => handleCopy(displayVpa, 'UPI ID')} 
+                          style={{border: '1px solid #CBD5E1', background: '#F8FAFC', borderRadius: '4px', padding: '3px 8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600}}
+                        >
+                          {copiedText === 'UPI ID' ? '✓ Copied!' : '📋 Copy'}
+                        </button>
+                      </div>
+                      <div style={{fontSize: '0.85rem', color: 'var(--text-muted)'}}>
+                        Payee: <strong>{displayPayee}</strong>
+                      </div>
 
-                    {upiData?.upiString && (
                       <a 
-                        href={upiData.upiString} 
+                        href={upiUri} 
                         className="btn btn-outline" 
-                        style={{marginTop: '0.5rem', fontSize: '0.85rem', padding: '0.45rem 1rem'}}
+                        style={{marginTop: '0.25rem', fontSize: '0.85rem', padding: '0.45rem 1rem'}}
                       >
                         📲 Tap to Pay in Mobile App
                       </a>
-                    )}
 
-                    <div style={{marginTop: '1.25rem', width: '100%', maxWidth: '380px', textAlign: 'left'}}>
-                      <label className="form-label" style={{fontSize: '0.85rem', marginBottom: '0.35rem'}}>
-                        UPI Ref / UTR No. (Optional):
-                      </label>
-                      <input 
-                        type="text" 
-                        className="form-control" 
-                        placeholder="Enter UTR or leave blank to auto-generate" 
-                        value={paymentDetails.utr} 
-                        onChange={(e) => setPaymentDetails({...paymentDetails, utr: e.target.value})} 
-                      />
-                      <p style={{fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.35rem', marginBottom: '1.25rem'}}>
-                        ⚡ A unique Transaction ID will be automatically generated upon payment.
-                      </p>
+                      {/* Bank Details Dropdown */}
+                      <details style={{marginTop: '0.5rem', width: '100%', maxWidth: '380px', textAlign: 'left', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '0.5rem 0.75rem', background: '#F8FAFC', fontSize: '0.82rem'}}>
+                        <summary style={{cursor: 'pointer', fontWeight: 600, color: 'var(--primary-color)'}}>🏦 Bank Account Details (NEFT / IMPS)</summary>
+                        <div style={{marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', color: '#334155'}}>
+                          <div>Bank: <strong>Federal Bank</strong></div>
+                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <span>A/C No: <strong>77770113307348</strong></span>
+                            <button type="button" onClick={() => handleCopy('77770113307348', 'A/C')} style={{border: 'none', background: 'transparent', color: 'var(--primary-color)', cursor: 'pointer', fontSize: '0.8rem', textDecoration: 'underline'}}>
+                              {copiedText === 'A/C' ? '✓ Copied' : 'Copy'}
+                            </button>
+                          </div>
+                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <span>IFSC: <strong>FDRL0007777</strong></span>
+                            <button type="button" onClick={() => handleCopy('FDRL0007777', 'IFSC')} style={{border: 'none', background: 'transparent', color: 'var(--primary-color)', cursor: 'pointer', fontSize: '0.8rem', textDecoration: 'underline'}}>
+                              {copiedText === 'IFSC' ? '✓ Copied' : 'Copy'}
+                            </button>
+                          </div>
+                          <div>Payee: <strong>Ammaji Fashions</strong></div>
+                        </div>
+                      </details>
 
-                      <button 
-                        type="button"
-                        onClick={() => handlePayment(true)} 
-                        className="btn btn-primary" 
-                        style={{
-                          width: '100%', 
-                          backgroundColor: '#16A34A', 
-                          borderColor: '#16A34A', 
-                          color: '#ffffff', 
-                          padding: '1rem 1.25rem', 
-                          fontSize: '1.1rem', 
-                          fontWeight: 'bold', 
-                          borderRadius: '8px', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
-                          gap: '0.5rem',
-                          boxShadow: '0 4px 14px rgba(22, 163, 74, 0.35)',
-                          cursor: 'pointer'
-                        }} 
-                        disabled={loading}
-                      >
-                        {loading ? 'Confirming Payment...' : `✓ I Have Paid ₹${amountToPayToday} — Complete Order`}
-                      </button>
+                      <div style={{marginTop: '1.25rem', width: '100%', maxWidth: '380px', textAlign: 'left'}}>
+                        <label className="form-label" style={{fontSize: '0.85rem', marginBottom: '0.35rem'}}>
+                          UPI Ref / UTR No. (Optional):
+                        </label>
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          placeholder="Enter UTR or leave blank to auto-generate" 
+                          value={paymentDetails.utr} 
+                          onChange={(e) => setPaymentDetails({...paymentDetails, utr: e.target.value})} 
+                        />
+                        <p style={{fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.35rem', marginBottom: '1.25rem'}}>
+                          ⚡ A unique Transaction ID will be automatically generated upon payment.
+                        </p>
+
+                        <button 
+                          type="button"
+                          onClick={() => handlePayment(true)} 
+                          className="btn btn-primary" 
+                          style={{
+                            width: '100%', 
+                            backgroundColor: '#16A34A', 
+                            borderColor: '#16A34A', 
+                            color: '#ffffff', 
+                            padding: '1rem 1.25rem', 
+                            fontSize: '1.1rem', 
+                            fontWeight: 'bold', 
+                            borderRadius: '8px', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            gap: '0.5rem',
+                            boxShadow: '0 4px 14px rgba(22, 163, 74, 0.35)',
+                            cursor: 'pointer'
+                          }} 
+                          disabled={loading}
+                        >
+                          {loading ? 'Confirming Payment...' : `✓ I Have Paid ₹${amountToPayToday} — Complete Order`}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : paymentMethod === 'Card' ? (
+                );
+              })() : paymentMethod === 'Card' ? (
                 <div style={{display: 'grid', gap: '1rem'}}>
                   <div>
                     <label className="form-label">Card Number <span style={{color:'red'}}>*</span></label>

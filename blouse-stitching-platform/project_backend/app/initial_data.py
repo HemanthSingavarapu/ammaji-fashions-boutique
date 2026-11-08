@@ -1,6 +1,26 @@
+from sqlalchemy import text
 from sqlalchemy.orm import Session
+from app.database import Base
 from app import models
 from app.security import get_password_hash
+
+def auto_migrate(engine):
+    """
+    Safely adds missing columns to existing SQLite tables without losing data.
+    """
+    with engine.connect() as conn:
+        for table_name, table in Base.metadata.tables.items():
+            try:
+                res = conn.execute(text(f"PRAGMA table_info({table_name});"))
+                existing_cols = {row[1] for row in res.fetchall()}
+                for col in table.columns:
+                    if col.name not in existing_cols:
+                        col_type = col.type.compile(engine.dialect)
+                        sql = f"ALTER TABLE {table_name} ADD COLUMN {col.name} {col_type};"
+                        conn.execute(text(sql))
+                        conn.commit()
+            except Exception as e:
+                print(f"Auto-migrate note for {table_name}: {e}")
 
 def seed_database(db: Session):
     # Ensure default admin account exists

@@ -4,13 +4,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
 from app.database import engine, Base, SessionLocal
-from app.initial_data import seed_database
+from app.initial_data import seed_database, auto_migrate
 from app.routers import auth, catalogue, orders, measurements, wishlist, payments, admin
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create all DB tables
     Base.metadata.create_all(bind=engine)
+    
+    # Auto-migrate any missing columns
+    auto_migrate(engine)
     
     # Run data seeding
     db = SessionLocal()
