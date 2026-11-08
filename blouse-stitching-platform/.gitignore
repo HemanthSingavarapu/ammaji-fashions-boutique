@@ -3,15 +3,16 @@ node_modules/
 dist/
 .DS_Store
 
-# Gradle & Java
-.gradle/
-build/
-*.class
-*.log
-*.mv.db
-*.trace.db
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.db
+*.sqlite3
+.env
 
-# IDE
+# IDE & Editor
 .idea/
 .vscode/
 *.iml

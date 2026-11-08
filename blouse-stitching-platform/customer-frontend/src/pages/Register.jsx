@@ -12,6 +12,8 @@ function Register() {
   const [formErrors, setFormErrors] = useState({});
   const [globalError, setGlobalError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validateField = (name, value) => {
     switch (name) {
@@ -113,11 +115,34 @@ function Register() {
     return <div style={{color: 'var(--error-color)', fontSize: '0.85rem', marginTop: '0.25rem'}}>{msg}</div>;
   };
 
+  const EyeIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    </svg>
+  );
+
+  const EyeOffIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+      <line x1="1" y1="1" x2="23" y2="23"></line>
+    </svg>
+  );
+
   return (
     <div className="container section" style={{maxWidth: '800px'}}>
       <div className="card" style={{padding: '3rem'}}>
         <h2 className="section-title">Create an Account</h2>
-        {globalError && <div style={{backgroundColor: 'var(--error-color)', color: 'white', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem'}}>{globalError}</div>}
+        {globalError && (
+          <div style={{backgroundColor: 'var(--error-color)', color: 'white', padding: '1rem 1.25rem', borderRadius: '6px', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem'}}>
+            <div>⚠️ {globalError}</div>
+            {globalError.toLowerCase().includes('login') && (
+              <Link to="/login" style={{color: '#fff', textDecoration: 'underline', fontWeight: 'bold', fontSize: '0.9rem'}}>
+                Go to Login →
+              </Link>
+            )}
+          </div>
+        )}
         
         <form onSubmit={handleSubmit}>
           
@@ -138,12 +163,74 @@ function Register() {
           <div className="responsive-form-grid">
             <div className="form-group" style={{marginBottom: 0}}>
               <label className="form-label">Password <span style={{color: 'red'}}>*</span></label>
-              <input type="password" className={`form-control ${formErrors.password ? 'input-error' : ''}`} name="password" value={formData.password} onChange={handleChange} required placeholder="Min 6 characters" />
+              <div style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  className={`form-control ${formErrors.password ? 'input-error' : ''}`} 
+                  name="password" 
+                  value={formData.password} 
+                  onChange={handleChange} 
+                  required 
+                  placeholder="Min 6 characters" 
+                  style={{paddingRight: '2.75rem'}}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--text-muted, #6B7280)'
+                  }}
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
               <ErrorMsg msg={formErrors.password} />
             </div>
+
             <div className="form-group" style={{marginBottom: 0}}>
               <label className="form-label">Confirm Password <span style={{color: 'red'}}>*</span></label>
-              <input type="password" className={`form-control ${formErrors.confirmPassword ? 'input-error' : ''}`} name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required />
+              <div style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
+                <input 
+                  type={showConfirmPassword ? 'text' : 'password'} 
+                  className={`form-control ${formErrors.confirmPassword ? 'input-error' : ''}`} 
+                  name="confirmPassword" 
+                  value={formData.confirmPassword} 
+                  onChange={handleChange} 
+                  required 
+                  style={{paddingRight: '2.75rem'}}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--text-muted, #6B7280)'
+                  }}
+                  title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
               <ErrorMsg msg={formErrors.confirmPassword} />
             </div>
           </div>

@@ -1,11 +1,16 @@
-FROM gradle:8.5-jdk17-alpine AS build
-WORKDIR /home/gradle/src
-COPY --chown=gradle:gradle . .
-RUN chmod +x gradlew && ./gradlew bootJar -x test --no-daemon
+FROM python:3.12-slim
 
-FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-COPY --from=build /home/gradle/src/build/libs/*.jar app.jar
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=8080
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
 EXPOSE 8080
-ENV PORT=8080
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT} -jar app.jar"]
+
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT}"]

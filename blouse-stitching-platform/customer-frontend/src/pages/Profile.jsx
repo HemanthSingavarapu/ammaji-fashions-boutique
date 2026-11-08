@@ -196,16 +196,14 @@ function Profile() {
                           </p>
                           <div style={{color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: '1.4'}}>
                             <div>
-                              Stitching Total: <strong>₹{order.amount}</strong> • Payment: <strong>{hasSuccessfulPayment ? 'PAID' : (isCancelled ? 'CANCELLED' : order.paymentStatus)}</strong>
+                              Stitching Total: <strong>₹{order.amount}</strong> • Payment: <strong style={{color: order.paymentStatus === 'SUCCESS' ? '#16A34A' : order.paymentStatus === 'UNDER_REVIEW' ? '#D97706' : 'inherit'}}>{order.paymentStatus === 'SUCCESS' ? 'PAID' : (isCancelled ? 'CANCELLED' : order.paymentStatus)}</strong>
                             </div>
-                            {hasSuccessfulPayment && (
-                              <div style={{marginTop: '0.2rem'}}>
-                                Plan: <strong>{order.paymentType === 'ADVANCE_20' ? '20% Advance Booking' : 'Full Payment (100%)'}</strong> • Paid: <strong>₹{paidAmt}</strong>
-                                {order.transactionNumber && (
-                                  <span> • Txn: <code style={{color: 'var(--primary-color)'}}>{order.transactionNumber}</code></span>
-                                )}
-                              </div>
-                            )}
+                            <div style={{marginTop: '0.2rem'}}>
+                              Plan: <strong>{order.paymentType === 'ADVANCE_20' ? '20% Advance Booking' : 'Full Payment (100%)'}</strong> • Paid: <strong>₹{paidAmt}</strong>
+                              {order.transactionNumber && (
+                                <span> • Txn ID: <code style={{color: 'var(--primary-color)', fontWeight: 600}}>{order.transactionNumber}</code></span>
+                              )}
+                            </div>
                           </div>
                         </div>
                         
@@ -219,15 +217,27 @@ function Profile() {
                             Track 📍
                           </Link>
 
-                          {order.paymentStatus === 'SUCCESS' && (
-                            <Link 
-                              to="/success" 
-                              className="btn btn-outline" 
-                              style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', textDecoration: 'none'}} 
-                              state={{orderNumber: order.orderNumber}}
-                            >
-                              Invoice 🧾
-                            </Link>
+                          {(order.paymentStatus === 'SUCCESS' || order.paymentStatus === 'UNDER_REVIEW') && (
+                            <>
+                              <Link 
+                                to="/success" 
+                                className="btn btn-outline" 
+                                style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', textDecoration: 'none'}} 
+                                state={{orderNumber: order.orderNumber}}
+                              >
+                                Invoice 🧾
+                              </Link>
+                              <a 
+                                href={`http://localhost:8080/api/orders/${order.id}/invoice`} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="btn btn-outline" 
+                                style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', textDecoration: 'none'}}
+                                title="Download PDF Invoice"
+                              >
+                                📥 PDF
+                              </a>
+                            </>
                           )}
 
                           <a 

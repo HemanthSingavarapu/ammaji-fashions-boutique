@@ -13,6 +13,7 @@ import MeasurementsGuide from './pages/MeasurementsGuide';
 import Wishlist from './pages/Wishlist';
 import Success from './pages/Success';
 import CustomStudio from './pages/CustomStudio';
+import ForgotPassword from './pages/ForgotPassword';
 import ScrollToTop from './components/ScrollToTop';
 import WhatsAppChat from './components/WhatsAppChat';
 import { AuthProvider } from './context/AuthContext';
@@ -31,6 +32,7 @@ function App() {
             <Route path="/design/:id" element={<DesignDetails />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/checkout/:id" element={<Checkout />} />
             <Route path="/success" element={<Success />} />

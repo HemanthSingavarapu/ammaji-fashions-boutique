@@ -73,8 +73,9 @@ function Checkout() {
 
   const [instructions, setInstructions] = useState('');
   
-  const [paymentMethod, setPaymentMethod] = useState('Card');
-  const [paymentDetails, setPaymentDetails] = useState({ cardNo: '', expiry: '', cvv: '', upiId: '' });
+  const [paymentMethod, setPaymentMethod] = useState('UPI_QR');
+  const [paymentDetails, setPaymentDetails] = useState({ cardNo: '', expiry: '', cvv: '', upiId: '', utr: '' });
+  const [upiData, setUpiData] = useState(null);
   const [paymentType, setPaymentType] = useState('ADVANCE_20'); // 'ADVANCE_20' or 'FULL'
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
   const [courierOption, setCourierOption] = useState('SELF'); // 'SELF' or 'BOUTIQUE'
@@ -95,6 +96,17 @@ function Checkout() {
   // Courier charges are excluded from online stitching order total (billed at actuals with bill copy shared)
   const COURIER_RETURN_CHARGE = 0;
   const COURIER_BOUTIQUE_CHARGE = 0;
+
+  // Real-time calculations (declared at top level)
+  const addonsTotal = (addons.tassels ? ADDON_PRICES.tassels : 0) + 
+                      (addons.padded ? ADDON_PRICES.padded : 0) + 
+                      (addons.premiumLining ? ADDON_PRICES.premiumLining : 0);
+
+  const designPrice = design ? Number(design.price || 0) : 0;
+  const finalPayableAmount = designPrice + addonsTotal;
+  const advance20Amount = Math.round(finalPayableAmount * 0.20);
+  const amountToPayToday = paymentType === 'ADVANCE_20' ? advance20Amount : finalPayableAmount;
+  const remainingAmount = finalPayableAmount - amountToPayToday;
 
   // 1. ENFORCE AUTHENTICATION
   useEffect(() => {
@@ -126,6 +138,14 @@ function Checkout() {
     document.body.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [step]);
 
+  useEffect(() => {
+    if (step === 2 && amountToPayToday > 0) {
+      api.get(`/payments/upi-info?amount=${amountToPayToday}&orderNumber=NEW_ORDER`)
+        .then(res => setUpiData(res.data))
+        .catch(() => {});
+    }
+  }, [step, amountToPayToday]);
+
   const handleAddInstructionTag = (tag) => {
     setInstructions(prev => {
       if (!prev) return tag;
@@ -147,13 +167,28 @@ function Checkout() {
     if (courierOption === 'BOUTIQUE') {
       finalInstructions = `PICKUP SLOT: ${pickupDay} - ${pickupSlot}\n` + finalInstructions;
     }
+
+    const cleanedMeasurement = {};
+    if (measurement) {
+      ['bust', 'waist', 'shoulder', 'blouseLength', 'sleeveLength', 'armhole', 'frontNeck', 'backNeck'].forEach(k => {
+        const val = measurement[k];
+        if (val !== '' && val !== null && val !== undefined && !isNaN(Number(val))) {
+          cleanedMeasurement[k] = Number(val);
+        } else {
+          cleanedMeasurement[k] = null;
+        }
+      });
+    }
+
+    const parsedDesignId = (id && id !== 'custom' && !isNaN(Number(id))) ? parseInt(id, 10) : null;
+
     return {
-      designId: id === 'custom' ? null : id,
+      designId: parsedDesignId,
       customDesignName: id === 'custom' ? design?.name : null,
       customDesignDetails: id === 'custom' ? design?.description : null,
       deliveryAddress: finalAddress,
       specialInstructions: finalInstructions,
-      measurement: measurement,
+      measurement: cleanedMeasurement,
       courierOption: courierOption,
       amount: finalPayableAmount,
       paymentType: paymentType,
@@ -221,7 +256,7 @@ function Checkout() {
       if (paymentDetails.cardNo.length !== 16) { alert("Please enter a valid 16-digit card number"); return; }
       if (paymentDetails.expiry.length < 5) { alert("Please enter a valid expiry date (MM/YY)"); return; }
       if (paymentDetails.cvv.length !== 3) { alert("Please enter a valid 3-digit CVV"); return; }
-    } else {
+    } else if (paymentMethod === 'PhonePe') {
       if (paymentDetails.upiId.length < 5 || !paymentDetails.upiId.includes('@')) { alert("Please enter a valid UPI ID (e.g. name@ybl)"); return; }
     }
 
@@ -229,22 +264,39 @@ function Checkout() {
     try {
       const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       const randCode = Math.floor(100000 + Math.random() * 900000);
-      const txnNumber = `TXN-${dateStr}-${randCode}`;
+      const txnNumber = paymentDetails.utr && paymentDetails.utr.trim().length > 0 ? paymentDetails.utr.trim() : `TXN-${dateStr}-${randCode}`;
 
       let currentOrder = order;
       if (!currentOrder || !currentOrder.id) {
         currentOrder = await createOrderCall();
       }
 
-      try {
-        await api.post(`/payments/dummy?orderId=${currentOrder.id}&success=true&transactionNumber=${txnNumber}&paymentType=${paymentType}&paidAmount=${amountToPayToday}&balanceAmount=${remainingAmount}`);
-      } catch (postErr) {
-        // If order session expired or order not found in DB, re-create cleanly and retry payment
-        if (postErr.response?.status === 404 || postErr.response?.status === 400) {
-          currentOrder = await createOrderCall();
-          await api.post(`/payments/dummy?orderId=${currentOrder.id}&success=true&transactionNumber=${txnNumber}&paymentType=${paymentType}&paidAmount=${amountToPayToday}&balanceAmount=${remainingAmount}`);
-        } else {
-          throw postErr;
+      let finalTxnNumber = txnNumber;
+      if (paymentMethod === 'UPI_QR') {
+        const payRes = await api.post('/payments/submit-utr', {
+          orderId: currentOrder.id,
+          utrNumber: txnNumber,
+          paymentType: paymentType
+        });
+        if (payRes.data?.paymentReference) {
+          finalTxnNumber = payRes.data.paymentReference;
+        }
+      } else {
+        try {
+          const payRes = await api.post(`/payments/dummy?orderId=${currentOrder.id}&success=true&transactionNumber=${txnNumber}&paymentType=${paymentType}&paidAmount=${amountToPayToday}&balanceAmount=${remainingAmount}`);
+          if (payRes.data?.paymentReference) {
+            finalTxnNumber = payRes.data.paymentReference;
+          }
+        } catch (postErr) {
+          if (postErr.response?.status === 404 || postErr.response?.status === 400) {
+            currentOrder = await createOrderCall();
+            const payRes = await api.post(`/payments/dummy?orderId=${currentOrder.id}&success=true&transactionNumber=${txnNumber}&paymentType=${paymentType}&paidAmount=${amountToPayToday}&balanceAmount=${remainingAmount}`);
+            if (payRes.data?.paymentReference) {
+              finalTxnNumber = payRes.data.paymentReference;
+            }
+          } else {
+            throw postErr;
+          }
         }
       }
 
@@ -252,10 +304,11 @@ function Checkout() {
       navigate('/success', { 
         state: { 
           orderNumber: currentOrder.orderNumber,
-          transactionNumber: txnNumber,
+          transactionNumber: finalTxnNumber,
           paidAmount: amountToPayToday,
           paymentType: paymentType,
-          balanceAmount: remainingAmount
+          balanceAmount: remainingAmount,
+          isUnderReview: paymentMethod === 'UPI_QR'
         } 
       });
     } catch (err) {
@@ -266,20 +319,13 @@ function Checkout() {
     }
   };
 
-  if(!user || !design) return <div className="container section">Loading...</div>;
-
-  const currentCourierCharge = 0;
-  
-  const addonsTotal = (addons.tassels ? ADDON_PRICES.tassels : 0) + 
-                      (addons.padded ? ADDON_PRICES.padded : 0) + 
-                      (addons.premiumLining ? ADDON_PRICES.premiumLining : 0);
-
-  const rawTotal = design.price + addonsTotal;
-  const finalPayableAmount = rawTotal;
-
-  const advance20Amount = Math.round(finalPayableAmount * 0.20);
-  const amountToPayToday = paymentType === 'ADVANCE_20' ? advance20Amount : finalPayableAmount;
-  const remainingAmount = finalPayableAmount - amountToPayToday;
+  if (!user || !design) {
+    return (
+      <div className="container section" style={{ textAlign: 'center', padding: '5rem 1rem' }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Loading checkout details...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container section" style={{maxWidth: '850px'}}>
@@ -572,17 +618,83 @@ function Checkout() {
             </div>
 
             <div style={{display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap'}}>
-              {['Card', 'PhonePe'].map(method => (
-                <label key={method} style={{border: '1px solid var(--border-color)', padding: '1rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1', minWidth: '150px', backgroundColor: paymentMethod === method ? 'var(--bg-surface-elevated)' : 'transparent'}}>
-                  <input type="radio" name="paymentMethod" value={method} checked={paymentMethod === method} onChange={(e) => setPaymentMethod(e.target.value)} />
-                  {method}
+              {[
+                { id: 'UPI_QR', label: '⚡ Dynamic UPI QR Code (GPay / PhonePe / Paytm)' },
+                { id: 'Card', label: '💳 Credit / Debit Card' },
+                { id: 'PhonePe', label: '📱 Enter UPI ID' }
+              ].map(item => (
+                <label key={item.id} style={{border: '1px solid var(--border-color)', padding: '0.85rem 1rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1', minWidth: '170px', backgroundColor: paymentMethod === item.id ? 'var(--bg-surface-elevated)' : 'transparent'}}>
+                  <input type="radio" name="paymentMethod" value={item.id} checked={paymentMethod === item.id} onChange={(e) => setPaymentMethod(e.target.value)} />
+                  <span style={{fontWeight: 600, fontSize: '0.9rem'}}>{item.label}</span>
                 </label>
               ))}
             </div>
 
             {/* Payment Details Form */}
             <div style={{marginBottom: '2rem'}}>
-              {paymentMethod === 'Card' ? (
+              {paymentMethod === 'UPI_QR' ? (
+                <div style={{
+                  background: 'var(--bg-surface-elevated)', 
+                  border: '2px dashed var(--primary-color)', 
+                  borderRadius: '12px', 
+                  padding: '2rem 1.5rem', 
+                  textAlign: 'center'
+                }}>
+                  <h4 style={{margin: '0 0 0.4rem 0', color: 'var(--primary-color)'}}>
+                    Scan with Any UPI App to Pay ₹{amountToPayToday}
+                  </h4>
+                  <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem'}}>
+                    Open GPay, PhonePe, Paytm, BHIM, or any banking app and scan this QR code
+                  </p>
+
+                  {upiData?.qrCodeDataUrl ? (
+                    <div style={{display: 'inline-block', background: '#FFFFFF', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)'}}>
+                      <img 
+                        src={upiData.qrCodeDataUrl} 
+                        alt="UPI QR Code" 
+                        style={{width: '200px', height: '200px', display: 'block'}} 
+                      />
+                    </div>
+                  ) : (
+                    <div style={{padding: '2rem', color: 'var(--text-muted)'}}>Generating UPI QR Code...</div>
+                  )}
+
+                  <div style={{marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', alignItems: 'center'}}>
+                    <div style={{fontSize: '0.95rem', fontWeight: 600}}>
+                      UPI ID: <span style={{color: 'var(--primary-color)', fontFamily: 'monospace', fontSize: '1.05rem', background: '#FFF', padding: '3px 8px', borderRadius: '4px', border: '1px solid #DDD'}}>{upiData?.vpa || 'boutique@upi'}</span>
+                    </div>
+                    <div style={{fontSize: '0.85rem', color: 'var(--text-muted)'}}>
+                      Payee: <strong>{upiData?.payeeName || 'Ammaji Fashions & Boutique'}</strong>
+                    </div>
+
+                    {upiData?.upiString && (
+                      <a 
+                        href={upiData.upiString} 
+                        className="btn btn-outline" 
+                        style={{marginTop: '0.5rem', fontSize: '0.85rem', padding: '0.45rem 1rem'}}
+                      >
+                        📲 Tap to Pay in Mobile App
+                      </a>
+                    )}
+
+                    <div style={{marginTop: '1.25rem', width: '100%', maxWidth: '380px', textAlign: 'left'}}>
+                      <label className="form-label" style={{fontSize: '0.85rem', marginBottom: '0.35rem'}}>
+                        UPI Ref / UTR No. (Optional):
+                      </label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        placeholder="Enter UTR or leave blank to auto-generate" 
+                        value={paymentDetails.utr} 
+                        onChange={(e) => setPaymentDetails({...paymentDetails, utr: e.target.value})} 
+                      />
+                      <p style={{fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.35rem', marginBottom: 0}}>
+                        ⚡ A unique Transaction ID will be automatically generated upon payment.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : paymentMethod === 'Card' ? (
                 <div style={{display: 'grid', gap: '1rem'}}>
                   <div>
                     <label className="form-label">Card Number <span style={{color:'red'}}>*</span></label>
@@ -601,7 +713,7 @@ function Checkout() {
                 </div>
               ) : (
                 <div>
-                  <label className="form-label">PhonePe UPI ID <span style={{color:'red'}}>*</span></label>
+                  <label className="form-label">Enter UPI ID <span style={{color:'red'}}>*</span></label>
                   <input type="text" className="form-control" placeholder="e.g. yourname@ybl or 9876543210@upi" value={paymentDetails.upiId} onChange={(e) => setPaymentDetails({...paymentDetails, upiId: e.target.value})} required />
                 </div>
               )}

@@ -74,8 +74,8 @@ function Success() {
       
       {/* Top Banner */}
       <div style={{
-        background: '#ECFDF5', 
-        border: '1px solid #A7F3D0', 
+        background: order.paymentStatus === 'UNDER_REVIEW' ? '#FEFCE8' : '#ECFDF5', 
+        border: order.paymentStatus === 'UNDER_REVIEW' ? '1px solid #FDE047' : '1px solid #A7F3D0', 
         borderRadius: '12px', 
         padding: '1.25rem 1.75rem', 
         marginBottom: '1.75rem',
@@ -87,7 +87,7 @@ function Success() {
       }}>
         <div style={{display: 'flex', alignItems: 'center', gap: '0.85rem'}}>
           <div style={{
-            background: '#10B981', 
+            background: order.paymentStatus === 'UNDER_REVIEW' ? '#EAB308' : '#10B981', 
             color: '#fff', 
             borderRadius: '50%', 
             width: '36px', 
@@ -97,16 +97,29 @@ function Success() {
             justifyContent: 'center',
             fontSize: '1.15rem',
             fontWeight: 'bold'
-          }}>✓</div>
+          }}>{order.paymentStatus === 'UNDER_REVIEW' ? '⏳' : '✓'}</div>
           <div>
-            <h3 style={{margin: 0, color: '#065F46', fontSize: '1.2rem', fontWeight: 700}}>Payment Successful</h3>
-            <p style={{margin: '0.15rem 0 0 0', color: '#047857', fontSize: '0.88rem'}}>
-              {isAdvance ? '20% Advance Booking Received' : '100% Full Payment Received'}
+            <h3 style={{margin: 0, color: order.paymentStatus === 'UNDER_REVIEW' ? '#854D0E' : '#065F46', fontSize: '1.2rem', fontWeight: 700}}>
+              {order.paymentStatus === 'UNDER_REVIEW' ? 'Payment Reference Under Review' : 'Payment Confirmed'}
+            </h3>
+            <p style={{margin: '0.15rem 0 0 0', color: order.paymentStatus === 'UNDER_REVIEW' ? '#A16207' : '#047857', fontSize: '0.88rem'}}>
+              {order.paymentStatus === 'UNDER_REVIEW'
+                ? `Transaction ID: ${transactionNumber} generated and received.`
+                : (isAdvance ? '20% Advance Booking Received' : '100% Full Payment Received')}
             </p>
           </div>
         </div>
 
-        <div style={{display: 'flex', gap: '0.6rem'}}>
+        <div style={{display: 'flex', gap: '0.6rem', flexWrap: 'wrap'}}>
+          <a 
+            href={`http://localhost:8080/api/orders/${order.id}/invoice`} 
+            target="_blank" 
+            rel="noreferrer" 
+            className="btn btn-outline" 
+            style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', background: '#fff', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}
+          >
+            📥 PDF Invoice
+          </a>
           <button 
             onClick={() => window.print()} 
             className="btn btn-outline" 
@@ -167,8 +180,8 @@ function Success() {
           fontSize: '0.88rem'
         }}>
           <div>
-            <span style={{color: 'var(--text-muted)'}}>Transaction Ref: </span>
-            <strong style={{color: 'var(--primary-color)'}}>{transactionNumber}</strong>
+            <span style={{color: 'var(--text-muted)'}}>Transaction ID: </span>
+            <strong style={{color: 'var(--primary-color)', fontFamily: 'monospace', fontSize: '0.95rem'}}>{transactionNumber}</strong>
           </div>
           <div>
             <span style={{color: 'var(--text-muted)'}}>Status: </span>

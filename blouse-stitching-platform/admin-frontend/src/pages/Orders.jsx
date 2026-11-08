@@ -71,6 +71,18 @@ function Orders() {
       .catch(err => alert('Failed to update status'));
   };
 
+  const getWhatsAppUpdateUrl = () => {
+    if (!selectedOrder) return '#';
+    const rawPhone = selectedOrder.user?.mobile || '';
+    const digits = rawPhone.replace(/\D/g, '');
+    const phone = digits.length === 10 ? '91' + digits : digits;
+    const custName = selectedOrder.user?.name || 'Customer';
+    const statusText = newStatus.replace(/_/g, ' ');
+    const note = comment ? `\n📝 Note: ${comment}` : '';
+    const msg = `Hello ${custName}! ✨\n\nYour bespoke blouse order *#${selectedOrder.orderNumber}* has an update!\n🧵 Status: *${statusText}*${note}\n\n👉 Track live: http://localhost:5180/track?orderId=${selectedOrder.orderNumber}\n\n- Ammaji Fashions`;
+    return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  };
+
   const exportToCSV = () => {
     if (orders.length === 0) {
       alert("No orders to export.");
@@ -256,11 +268,31 @@ function Orders() {
                       </span>
                     </td>
                     <td style={{textAlign: 'right'}}>
-                      <div style={{display: 'inline-flex', gap: '0.5rem', alignItems: 'center'}}>
+                      <div style={{display: 'inline-flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end'}}>
+                        <a 
+                          href={`http://localhost:8080/api/orders/${order.id}/job-card`}
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="btn btn-outline" 
+                          style={{padding: '0.35rem 0.55rem', fontSize: '0.78rem', textDecoration: 'none', background: '#F0F9FF', borderColor: '#BAE6FD', color: '#0369A1'}}
+                          title="Download Workshop Cutting Job Card (PDF)"
+                        >
+                          📋 Job Card
+                        </a>
+                        <a 
+                          href={`http://localhost:8080/api/orders/${order.id}/invoice`}
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="btn btn-outline" 
+                          style={{padding: '0.35rem 0.55rem', fontSize: '0.78rem', textDecoration: 'none'}}
+                          title="Download Tax Invoice (PDF)"
+                        >
+                          🧾 PDF
+                        </a>
                         <button 
                           className="btn btn-outline" 
                           onClick={() => handleDetailClick(order)}
-                          style={{padding: '0.35rem 0.65rem', fontSize: '0.8rem'}}
+                          style={{padding: '0.35rem 0.55rem', fontSize: '0.78rem'}}
                           title="View Details"
                         >
                           👁️ View
@@ -268,7 +300,7 @@ function Orders() {
                         <button 
                           className="btn btn-outline" 
                           onClick={() => handleLabelClick(order)}
-                          style={{padding: '0.35rem 0.65rem', fontSize: '0.8rem', backgroundColor: '#F9FAFB'}}
+                          style={{padding: '0.35rem 0.55rem', fontSize: '0.78rem', backgroundColor: '#F9FAFB'}}
                           title="Print Shipping Courier Label"
                         >
                           🏷️ Label
@@ -276,7 +308,7 @@ function Orders() {
                         <button 
                           className="btn btn-primary" 
                           onClick={() => handleUpdateClick(order)}
-                          style={{padding: '0.35rem 0.65rem', fontSize: '0.8rem'}}
+                          style={{padding: '0.35rem 0.55rem', fontSize: '0.78rem'}}
                         >
                           Update
                         </button>
@@ -354,9 +386,22 @@ function Orders() {
               ></textarea>
             </div>
 
-            <div style={{display: 'flex', justifyContent: 'flex-end', gap: '0.75rem'}}>
-              <button className="btn btn-outline" onClick={() => setShowModal(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={submitUpdate}>Save & Notify Customer</button>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap'}}>
+              {selectedOrder?.user?.mobile ? (
+                <a 
+                  href={getWhatsAppUpdateUrl()} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="btn btn-outline" 
+                  style={{color: '#16A34A', borderColor: '#16A34A', padding: '0.45rem 0.8rem', fontSize: '0.85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}
+                >
+                  💬 Send WhatsApp Update
+                </a>
+              ) : <div />}
+              <div style={{display: 'flex', gap: '0.75rem'}}>
+                <button className="btn btn-outline" onClick={() => setShowModal(false)}>Cancel</button>
+                <button className="btn btn-primary" onClick={submitUpdate}>Save & Notify Customer</button>
+              </div>
             </div>
           </div>
         </div>
@@ -420,7 +465,25 @@ function Orders() {
               )}
             </div>
 
-            <div style={{display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', borderTop: '1px solid var(--border)', paddingTop: '1rem'}}>
+            <div style={{display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', borderTop: '1px solid var(--border)', paddingTop: '1rem', flexWrap: 'wrap'}}>
+              <a 
+                href={`http://localhost:8080/api/orders/${detailOrder.id}/job-card`}
+                target="_blank" 
+                rel="noreferrer"
+                className="btn btn-outline"
+                style={{textDecoration: 'none'}}
+              >
+                📋 Job Card (PDF)
+              </a>
+              <a 
+                href={`http://localhost:8080/api/orders/${detailOrder.id}/invoice`}
+                target="_blank" 
+                rel="noreferrer"
+                className="btn btn-outline"
+                style={{textDecoration: 'none'}}
+              >
+                🧾 Invoice (PDF)
+              </a>
               <button className="btn btn-outline" onClick={() => { setShowDetailModal(false); handleLabelClick(detailOrder); }}>🏷️ Print Shipping Label</button>
               <button className="btn btn-primary" onClick={() => setShowDetailModal(false)}>Close</button>
             </div>
