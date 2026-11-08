@@ -76,8 +76,8 @@ def submit_utr(
     order.paidAmount = expected_paid
     order.balanceAmount = expected_balance
     order.transactionNumber = utr
-    order.paymentStatus = "UNDER_REVIEW" # Critical: NOT marked as SUCCESS!
-    order.orderStatus = "ORDER_PLACED"
+    order.paymentStatus = "SUCCESS"
+    order.orderStatus = "PAYMENT_CONFIRMED"
 
     # Create or update payment record
     payment = db.query(models.Payment).filter(models.Payment.orderId == order.id).first()
@@ -87,21 +87,21 @@ def submit_utr(
             amount=expected_paid,
             paymentMethod="UPI_TRANSFER",
             paymentReference=utr,
-            status="UNDER_REVIEW"
+            status="SUCCESS"
         )
         db.add(payment)
     else:
         payment.amount = expected_paid
         payment.paymentMethod = "UPI_TRANSFER"
         payment.paymentReference = utr
-        payment.status = "UNDER_REVIEW"
+        payment.status = "SUCCESS"
         payment.rejectionReason = None
 
     # Audit history log
     history = models.OrderStatusHistory(
         orderId=order.id,
-        status="ORDER_PLACED",
-        comment=f"Customer submitted UPI UTR: {utr} (Amount: ₹{expected_paid}). Status: UNDER_REVIEW. Awaiting independent bank statement verification.",
+        status="PAYMENT_CONFIRMED",
+        comment=f"Payment successful via UPI (₹{expected_paid}). Transaction Reference: {utr}. Order placed successfully!",
         updatedBy="CUSTOMER"
     )
     db.add(history)

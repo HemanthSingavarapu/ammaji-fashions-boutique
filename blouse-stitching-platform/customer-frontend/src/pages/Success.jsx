@@ -74,8 +74,8 @@ function Success() {
       
       {/* Top Banner */}
       <div style={{
-        background: order.paymentStatus === 'UNDER_REVIEW' ? '#FEFCE8' : '#ECFDF5', 
-        border: order.paymentStatus === 'UNDER_REVIEW' ? '1px solid #FDE047' : '1px solid #A7F3D0', 
+        background: '#ECFDF5', 
+        border: '1px solid #A7F3D0', 
         borderRadius: '12px', 
         padding: '1.25rem 1.75rem', 
         marginBottom: '1.75rem',
@@ -87,25 +87,25 @@ function Success() {
       }}>
         <div style={{display: 'flex', alignItems: 'center', gap: '0.85rem'}}>
           <div style={{
-            background: order.paymentStatus === 'UNDER_REVIEW' ? '#EAB308' : '#10B981', 
+            background: '#10B981', 
             color: '#fff', 
             borderRadius: '50%', 
-            width: '36px', 
-            height: '36px', 
+            width: '40px', 
+            height: '40px', 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center',
-            fontSize: '1.15rem',
+            fontSize: '1.3rem',
             fontWeight: 'bold'
-          }}>{order.paymentStatus === 'UNDER_REVIEW' ? '⏳' : '✓'}</div>
+          }}>✓</div>
           <div>
-            <h3 style={{margin: 0, color: order.paymentStatus === 'UNDER_REVIEW' ? '#854D0E' : '#065F46', fontSize: '1.2rem', fontWeight: 700}}>
-              {order.paymentStatus === 'UNDER_REVIEW' ? 'Payment Reference Under Review' : 'Payment Confirmed'}
+            <h3 style={{margin: 0, color: '#065F46', fontSize: '1.25rem', fontWeight: 800}}>
+              Payment Successful & Order Placed! 🎉
             </h3>
-            <p style={{margin: '0.15rem 0 0 0', color: order.paymentStatus === 'UNDER_REVIEW' ? '#A16207' : '#047857', fontSize: '0.88rem'}}>
-              {order.paymentStatus === 'UNDER_REVIEW'
-                ? `Transaction ID: ${transactionNumber} generated and received.`
-                : (isAdvance ? '20% Advance Booking Received' : '100% Full Payment Received')}
+            <p style={{margin: '0.15rem 0 0 0', color: '#047857', fontSize: '0.9rem'}}>
+              {isAdvance 
+                ? `Thank you! 20% advance booking payment of ₹${paidAmount} received. Order #${order.orderNumber} is confirmed.`
+                : `Thank you! Full payment of ₹${paidAmount} received. Order #${order.orderNumber} is confirmed.`}
             </p>
           </div>
         </div>

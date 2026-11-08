@@ -308,7 +308,7 @@ function Checkout() {
           paidAmount: amountToPayToday,
           paymentType: paymentType,
           balanceAmount: remainingAmount,
-          isUnderReview: paymentMethod === 'UPI_QR'
+          isUnderReview: false
         } 
       });
     } catch (err) {
@@ -688,9 +688,34 @@ function Checkout() {
                         value={paymentDetails.utr} 
                         onChange={(e) => setPaymentDetails({...paymentDetails, utr: e.target.value})} 
                       />
-                      <p style={{fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.35rem', marginBottom: 0}}>
+                      <p style={{fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.35rem', marginBottom: '1.25rem'}}>
                         ⚡ A unique Transaction ID will be automatically generated upon payment.
                       </p>
+
+                      <button 
+                        type="button"
+                        onClick={() => handlePayment(true)} 
+                        className="btn btn-primary" 
+                        style={{
+                          width: '100%', 
+                          backgroundColor: '#16A34A', 
+                          borderColor: '#16A34A', 
+                          color: '#ffffff', 
+                          padding: '1rem 1.25rem', 
+                          fontSize: '1.1rem', 
+                          fontWeight: 'bold', 
+                          borderRadius: '8px', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          gap: '0.5rem',
+                          boxShadow: '0 4px 14px rgba(22, 163, 74, 0.35)',
+                          cursor: 'pointer'
+                        }} 
+                        disabled={loading}
+                      >
+                        {loading ? 'Confirming Payment...' : `✓ I Have Paid ₹${amountToPayToday} — Complete Order`}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -725,7 +750,7 @@ function Checkout() {
               </p>
               <div style={{display: 'flex', gap: '1.5rem', justifyContent: 'center'}}>
                 <button onClick={() => handlePayment(true)} className="btn btn-primary" style={{backgroundColor: 'var(--success-color)', padding: '1rem 2rem'}} disabled={loading}>
-                  {loading ? 'Processing...' : `Pay ₹${amountToPayToday}`}
+                  {loading ? 'Processing...' : (paymentMethod === 'UPI_QR' ? `✓ I Have Paid ₹${amountToPayToday} — Place Order` : `Pay ₹${amountToPayToday}`)}
                 </button>
                 <button onClick={() => handlePayment(false)} className="btn btn-primary" style={{backgroundColor: 'var(--error-color)', padding: '1rem 2rem'}} disabled={loading}>
                   Cancel
