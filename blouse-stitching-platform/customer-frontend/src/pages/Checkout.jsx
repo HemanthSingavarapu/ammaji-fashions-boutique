@@ -74,7 +74,7 @@ function Checkout() {
   const [instructions, setInstructions] = useState('');
   
   const [paymentMethod, setPaymentMethod] = useState('UPI_QR');
-  const [paymentDetails, setPaymentDetails] = useState({ cardNo: '', expiry: '', cvv: '', upiId: '', utr: '' });
+  const [paymentDetails, setPaymentDetails] = useState({ cardNo: '', cardName: '', expiry: '', cvv: '', upiId: '', utr: '', bank: 'State Bank of India' });
   const [upiData, setUpiData] = useState(null);
   const [paymentType, setPaymentType] = useState('ADVANCE_20'); // 'ADVANCE_20' or 'FULL'
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
@@ -262,27 +262,16 @@ function Checkout() {
       return;
     }
     
-    // Validate Payment Details
-    if (paymentMethod === 'Card') {
-      if (paymentDetails.cardNo.length !== 16) { alert("Please enter a valid 16-digit card number"); return; }
-      if (paymentDetails.expiry.length < 5) { alert("Please enter a valid expiry date (MM/YY)"); return; }
-      if (paymentDetails.cvv.length !== 3) { alert("Please enter a valid 3-digit CVV"); return; }
-    } else if (paymentMethod === 'PhonePe') {
-      if (paymentDetails.upiId.length < 5 || !paymentDetails.upiId.includes('@')) { alert("Please enter a valid UPI ID (e.g. name@ybl)"); return; }
-    } else if (paymentMethod === 'UPI_QR') {
-      const cleanUtr = (paymentDetails.utr || '').trim().replace(/[^0-9a-zA-Z]/g, '');
-      if (cleanUtr.length < 10) {
-        alert("⚠️ Please enter the valid 12-digit UPI Reference / UTR Number from your payment app (Google Pay, PhonePe, Paytm, BHIM) to confirm your payment.");
-        return;
-      }
-    }
-
     setLoading(true);
     try {
       const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       const randCode = Math.floor(100000 + Math.random() * 900000);
-      const cleanUtr = (paymentDetails.utr || '').trim().replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
-      const txnNumber = paymentMethod === 'UPI_QR' ? cleanUtr : `TXN-${dateStr}-${randCode}`;
+      let prefix = 'UPI';
+      if (paymentMethod === 'Card') prefix = 'CARD';
+      else if (paymentMethod === 'NetBanking') prefix = 'NB';
+      else if (paymentMethod === 'UPI_QR') prefix = 'UPI-QR';
+
+      const txnNumber = `${prefix}-${dateStr}-${randCode}`;
 
       let currentOrder = order;
       if (!currentOrder || !currentOrder.id) {
@@ -290,47 +279,20 @@ function Checkout() {
       }
 
       let finalTxnNumber = txnNumber;
-      if (paymentMethod === 'UPI_QR') {
-        try {
-          const payRes = await api.post('/payments/submit-utr', {
-            orderId: currentOrder.id,
-            utrNumber: txnNumber,
-            paymentType: paymentType
-          });
-          if (payRes.data?.paymentReference) {
-            finalTxnNumber = payRes.data.paymentReference;
-          }
-        } catch (qrErr) {
-          if (qrErr.response?.status === 404) {
-            currentOrder = await createOrderCall();
-            const retryRes = await api.post('/payments/submit-utr', {
-              orderId: currentOrder.id,
-              utrNumber: txnNumber,
-              paymentType: paymentType
-            });
-            if (retryRes.data?.paymentReference) {
-              finalTxnNumber = retryRes.data.paymentReference;
-            }
-          } else {
-            throw qrErr;
-          }
+      try {
+        const payRes = await api.post(`/payments/dummy?orderId=${currentOrder.id}&success=true&transactionNumber=${txnNumber}&paymentType=${paymentType}&paidAmount=${amountToPayToday}&balanceAmount=${remainingAmount}`);
+        if (payRes.data?.paymentReference) {
+          finalTxnNumber = payRes.data.paymentReference;
         }
-      } else {
-        try {
+      } catch (postErr) {
+        if (postErr.response?.status === 404 || postErr.response?.status === 400) {
+          currentOrder = await createOrderCall();
           const payRes = await api.post(`/payments/dummy?orderId=${currentOrder.id}&success=true&transactionNumber=${txnNumber}&paymentType=${paymentType}&paidAmount=${amountToPayToday}&balanceAmount=${remainingAmount}`);
           if (payRes.data?.paymentReference) {
             finalTxnNumber = payRes.data.paymentReference;
           }
-        } catch (postErr) {
-          if (postErr.response?.status === 404 || postErr.response?.status === 400) {
-            currentOrder = await createOrderCall();
-            const payRes = await api.post(`/payments/dummy?orderId=${currentOrder.id}&success=true&transactionNumber=${txnNumber}&paymentType=${paymentType}&paidAmount=${amountToPayToday}&balanceAmount=${remainingAmount}`);
-            if (payRes.data?.paymentReference) {
-              finalTxnNumber = payRes.data.paymentReference;
-            }
-          } else {
-            throw postErr;
-          }
+        } else {
+          throw postErr;
         }
       }
 
@@ -342,7 +304,7 @@ function Checkout() {
           paidAmount: amountToPayToday,
           paymentType: paymentType,
           balanceAmount: remainingAmount,
-          isUnderReview: paymentMethod === 'UPI_QR'
+          isUnderReview: false
         } 
       });
     } catch (err) {
@@ -665,13 +627,27 @@ function Checkout() {
 
             <div style={{display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap'}}>
               {[
-                { id: 'UPI_QR', label: '⚡ Dynamic UPI QR Code (GPay / PhonePe / Paytm)' },
+                { id: 'UPI_QR', label: '📱 QR Code (UPI)' },
                 { id: 'Card', label: '💳 Credit / Debit Card' },
-                { id: 'PhonePe', label: '📱 Enter UPI ID' }
+                { id: 'NetBanking', label: '🏦 Net Banking' }
               ].map(item => (
-                <label key={item.id} style={{border: '1px solid var(--border-color)', padding: '0.85rem 1rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1', minWidth: '170px', backgroundColor: paymentMethod === item.id ? 'var(--bg-surface-elevated)' : 'transparent'}}>
+                <label key={item.id} style={{
+                  border: '2px solid',
+                  borderColor: paymentMethod === item.id ? 'var(--primary-color)' : 'var(--border-color)',
+                  padding: '0.85rem 1.25rem',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  flex: '1',
+                  minWidth: '170px',
+                  backgroundColor: paymentMethod === item.id ? 'var(--bg-surface-elevated)' : 'transparent',
+                  fontWeight: paymentMethod === item.id ? 700 : 500,
+                  transition: 'all 0.2s ease'
+                }}>
                   <input type="radio" name="paymentMethod" value={item.id} checked={paymentMethod === item.id} onChange={(e) => setPaymentMethod(e.target.value)} />
-                  <span style={{fontWeight: 600, fontSize: '0.9rem'}}>{item.label}</span>
+                  <span style={{fontSize: '0.95rem'}}>{item.label}</span>
                 </label>
               ))}
             </div>
@@ -689,53 +665,23 @@ function Checkout() {
                 return (
                   <div style={{
                     background: 'var(--bg-surface-elevated)', 
-                    border: '2px dashed var(--primary-color)', 
+                    border: '1px solid var(--border-color)', 
                     borderRadius: '12px', 
                     padding: '2rem 1.5rem', 
                     textAlign: 'center'
                   }}>
-                    <h4 style={{margin: '0 0 0.4rem 0', color: 'var(--primary-color)'}}>
-                      Scan with Any UPI App to Pay ₹{amountToPayToday}
-                    </h4>
-                    <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem'}}>
-                      Open GPay, PhonePe, Paytm, BHIM, or any banking app and scan this QR code
-                    </p>
-
-                    {/* Step-by-Step Payment Instructions Banner */}
-                    <div style={{
-                      background: '#F0FDF4', 
-                      border: '1px solid #BBF7D0', 
-                      borderRadius: '8px', 
-                      padding: '0.85rem 1rem', 
-                      marginBottom: '1.25rem', 
-                      textAlign: 'left', 
-                      fontSize: '0.85rem', 
-                      color: '#166534',
-                      maxWidth: '440px',
-                      margin: '0 auto 1.25rem auto'
-                    }}>
-                      <div style={{fontWeight: 700, marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.4rem'}}>
-                        <span>📋</span> Quick 3-Step Payment Process:
-                      </div>
-                      <ol style={{margin: '0 0 0 1.2rem', padding: 0, lineHeight: 1.6}}>
-                        <li><strong>Scan</strong> this QR code using GPay, PhonePe, Paytm, or BHIM.</li>
-                        <li><strong>Pay ₹{amountToPayToday}</strong> ({paymentType === 'ADVANCE_20' ? '20% Advance' : 'Full Payment'}) on your phone.</li>
-                        <li><strong>Click</strong> the green button below: <em>"✓ I Have Paid ₹{amountToPayToday} — Complete Order"</em>.</li>
-                      </ol>
-                    </div>
-
-                    <div style={{display: 'inline-block', background: '#FFFFFF', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)'}}>
+                    <div style={{display: 'inline-block', background: '#FFFFFF', padding: '14px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.06)', border: '1px solid #E2E8F0'}}>
                       <img 
                         src={qrImageSrc} 
                         alt="UPI QR Code" 
-                        style={{width: '200px', height: '200px', display: 'block'}} 
+                        style={{width: '220px', height: '220px', display: 'block'}} 
                       />
                     </div>
 
                     <div style={{marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center'}}>
                       <div style={{fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center'}}>
                         <span>UPI ID:</span>
-                        <span style={{color: 'var(--primary-color)', fontFamily: 'monospace', fontSize: '1.05rem', background: '#FFF', padding: '3px 8px', borderRadius: '4px', border: '1px solid #DDD'}}>{displayVpa}</span>
+                        <span style={{color: 'var(--primary-color)', fontFamily: 'monospace', fontSize: '1.05rem', background: '#FFF', padding: '3px 10px', borderRadius: '4px', border: '1px solid #DDD'}}>{displayVpa}</span>
                         <button 
                           type="button" 
                           onClick={() => handleCopy(displayVpa, 'UPI ID')} 
@@ -755,137 +701,168 @@ function Checkout() {
                       >
                         📲 Tap to Pay in Mobile App
                       </a>
-
-                      {/* Bank Details Dropdown */}
-                      <details style={{marginTop: '0.5rem', width: '100%', maxWidth: '380px', textAlign: 'left', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '0.5rem 0.75rem', background: '#F8FAFC', fontSize: '0.82rem'}}>
-                        <summary style={{cursor: 'pointer', fontWeight: 600, color: 'var(--primary-color)'}}>🏦 Bank Account Details (NEFT / IMPS)</summary>
-                        <div style={{marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', color: '#334155'}}>
-                          <div>Bank: <strong>Federal Bank</strong></div>
-                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                            <span>A/C No: <strong>77770113307348</strong></span>
-                            <button type="button" onClick={() => handleCopy('77770113307348', 'A/C')} style={{border: 'none', background: 'transparent', color: 'var(--primary-color)', cursor: 'pointer', fontSize: '0.8rem', textDecoration: 'underline'}}>
-                              {copiedText === 'A/C' ? '✓ Copied' : 'Copy'}
-                            </button>
-                          </div>
-                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                            <span>IFSC: <strong>FDRL0007777</strong></span>
-                            <button type="button" onClick={() => handleCopy('FDRL0007777', 'IFSC')} style={{border: 'none', background: 'transparent', color: 'var(--primary-color)', cursor: 'pointer', fontSize: '0.8rem', textDecoration: 'underline'}}>
-                              {copiedText === 'IFSC' ? '✓ Copied' : 'Copy'}
-                            </button>
-                          </div>
-                          <div>Payee: <strong>Ammaji Fashions</strong></div>
-                        </div>
-                      </details>
-
-                      <div style={{marginTop: '1.25rem', width: '100%', maxWidth: '380px', textAlign: 'left'}}>
-                        <label className="form-label" style={{fontSize: '0.88rem', marginBottom: '0.35rem', fontWeight: 700, color: 'var(--text-main)'}}>
-                          12-Digit UPI Ref / UTR Number <span style={{color: 'red'}}>*</span>:
-                        </label>
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          placeholder="e.g. 408912345678 (12 digits)" 
-                          maxLength={18}
-                          value={paymentDetails.utr} 
-                          onChange={(e) => setPaymentDetails({...paymentDetails, utr: e.target.value.replace(/[^0-9a-zA-Z]/g, '')})} 
-                          style={{
-                            fontSize: '0.95rem', 
-                            fontFamily: 'monospace', 
-                            letterSpacing: '1px', 
-                            border: '2px solid #CBD5E1',
-                            padding: '0.65rem 0.85rem'
-                          }}
-                          required
-                        />
-
-                        {/* Visual guide on where to find UTR */}
-                        <div style={{
-                          background: '#EFF6FF', 
-                          border: '1px solid #BFDBFE', 
-                          borderRadius: '6px', 
-                          padding: '0.6rem 0.75rem', 
-                          marginTop: '0.5rem', 
-                          marginBottom: '1.25rem', 
-                          fontSize: '0.78rem', 
-                          color: '#1E40AF', 
-                          lineHeight: 1.45
-                        }}>
-                          <div style={{fontWeight: 700, marginBottom: '0.2rem'}}>💡 Where to find your 12-digit UTR in payment apps:</div>
-                          <div>• <strong>Google Pay:</strong> View receipt → <em>"UPI transaction ID"</em></div>
-                          <div>• <strong>PhonePe:</strong> View receipt → <em>"UTR"</em></div>
-                          <div>• <strong>Paytm:</strong> View receipt → <em>"UPI Ref No"</em></div>
-                          <div style={{marginTop: '0.25rem', fontSize: '0.73rem', color: '#6B7280'}}>
-                            🔒 Our boutique team verifies this 12-digit UTR against our bank account to confirm your order.
-                          </div>
-                        </div>
-
-                        <button 
-                          type="button"
-                          onClick={() => handlePayment(true)} 
-                          className="btn btn-primary" 
-                          style={{
-                            width: '100%', 
-                            backgroundColor: '#16A34A', 
-                            borderColor: '#16A34A', 
-                            color: '#ffffff', 
-                            padding: '1rem 1.25rem', 
-                            fontSize: '1.05rem', 
-                            fontWeight: 'bold', 
-                            borderRadius: '8px', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center', 
-                            gap: '0.5rem',
-                            boxShadow: '0 4px 14px rgba(22, 163, 74, 0.35)',
-                            cursor: 'pointer'
-                          }} 
-                          disabled={loading}
-                        >
-                          {loading ? 'Submitting Payment Proof...' : `✓ I Have Paid ₹${amountToPayToday} — Submit Order`}
-                        </button>
-                      </div>
                     </div>
                   </div>
                 );
               })() : paymentMethod === 'Card' ? (
-                <div style={{display: 'grid', gap: '1rem'}}>
-                  <div>
-                    <label className="form-label">Card Number <span style={{color:'red'}}>*</span></label>
-                    <input type="text" className="form-control" placeholder="16-digit card number" maxLength="16" value={paymentDetails.cardNo} onChange={(e) => { if(/^[0-9]*$/.test(e.target.value)) setPaymentDetails({...paymentDetails, cardNo: e.target.value}) }} required />
-                  </div>
-                  <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem'}}>
+                <div style={{
+                  background: 'var(--bg-surface-elevated)', 
+                  border: '1px solid var(--border-color)', 
+                  borderRadius: '12px', 
+                  padding: '1.75rem',
+                  textAlign: 'left'
+                }}>
+                  <h4 style={{margin: '0 0 1.25rem 0', color: 'var(--text-main)', fontSize: '1.1rem'}}>Credit / Debit Card</h4>
+                  <div style={{display: 'grid', gap: '1rem'}}>
                     <div>
-                      <label className="form-label">Expiry (MM/YY) <span style={{color:'red'}}>*</span></label>
-                      <input type="text" className="form-control" placeholder="MM/YY" maxLength="5" value={paymentDetails.expiry} onChange={(e) => setPaymentDetails({...paymentDetails, expiry: e.target.value})} required />
+                      <label className="form-label" style={{fontSize: '0.85rem', fontWeight: 600}}>Card Number <span style={{color:'red'}}>*</span></label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        placeholder="1234 5678 9012 3456" 
+                        maxLength={19} 
+                        value={paymentDetails.cardNo} 
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, '').slice(0, 16);
+                          const formatted = raw.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+                          setPaymentDetails({...paymentDetails, cardNo: formatted});
+                        }} 
+                      />
                     </div>
                     <div>
-                      <label className="form-label">CVV <span style={{color:'red'}}>*</span></label>
-                      <input type="text" className="form-control" placeholder="123" maxLength="3" value={paymentDetails.cvv} onChange={(e) => { if(/^[0-9]*$/.test(e.target.value)) setPaymentDetails({...paymentDetails, cvv: e.target.value}) }} required />
+                      <label className="form-label" style={{fontSize: '0.85rem', fontWeight: 600}}>Cardholder Name</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        placeholder="e.g. Radhika Iyer" 
+                        value={paymentDetails.cardName} 
+                        onChange={(e) => setPaymentDetails({...paymentDetails, cardName: e.target.value})} 
+                      />
+                    </div>
+                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem'}}>
+                      <div>
+                        <label className="form-label" style={{fontSize: '0.85rem', fontWeight: 600}}>Expiry (MM/YY) <span style={{color:'red'}}>*</span></label>
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          placeholder="MM/YY" 
+                          maxLength={5} 
+                          value={paymentDetails.expiry} 
+                          onChange={(e) => {
+                            let val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                            if (val.length >= 3) val = val.slice(0, 2) + '/' + val.slice(2);
+                            setPaymentDetails({...paymentDetails, expiry: val});
+                          }} 
+                        />
+                      </div>
+                      <div>
+                        <label className="form-label" style={{fontSize: '0.85rem', fontWeight: 600}}>CVV <span style={{color:'red'}}>*</span></label>
+                        <input 
+                          type="password" 
+                          className="form-control" 
+                          placeholder="•••" 
+                          maxLength={3} 
+                          value={paymentDetails.cvv} 
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '').slice(0, 3);
+                            setPaymentDetails({...paymentDetails, cvv: val});
+                          }} 
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div>
-                  <label className="form-label">Enter UPI ID <span style={{color:'red'}}>*</span></label>
-                  <input type="text" className="form-control" placeholder="e.g. yourname@ybl or 9876543210@upi" value={paymentDetails.upiId} onChange={(e) => setPaymentDetails({...paymentDetails, upiId: e.target.value})} required />
+                <div style={{
+                  background: 'var(--bg-surface-elevated)', 
+                  border: '1px solid var(--border-color)', 
+                  borderRadius: '12px', 
+                  padding: '1.75rem',
+                  textAlign: 'left'
+                }}>
+                  <h4 style={{margin: '0 0 1.25rem 0', color: 'var(--text-main)', fontSize: '1.1rem'}}>Net Banking / Bank Transfer</h4>
+                  
+                  <div style={{marginBottom: '1.25rem'}}>
+                    <label className="form-label" style={{fontSize: '0.85rem', fontWeight: 600}}>Select Your Bank</label>
+                    <select 
+                      className="form-control" 
+                      value={paymentDetails.bank} 
+                      onChange={(e) => setPaymentDetails({...paymentDetails, bank: e.target.value})}
+                      style={{fontSize: '0.95rem', padding: '0.65rem'}}
+                    >
+                      <option value="State Bank of India">State Bank of India (SBI)</option>
+                      <option value="HDFC Bank">HDFC Bank</option>
+                      <option value="ICICI Bank">ICICI Bank</option>
+                      <option value="Axis Bank">Axis Bank</option>
+                      <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+                      <option value="Federal Bank">Federal Bank</option>
+                      <option value="Punjab National Bank">Punjab National Bank</option>
+                      <option value="Bank of Baroda">Bank of Baroda</option>
+                    </select>
+                  </div>
+
+                  <div style={{background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '0.85rem 1rem', fontSize: '0.85rem', color: '#334155'}}>
+                    <div style={{fontWeight: 700, color: 'var(--primary-color)', marginBottom: '0.4rem'}}>🏦 Direct NEFT / IMPS Boutique Account:</div>
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '0.3rem'}}>
+                      <div>Bank: <strong>Federal Bank</strong></div>
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                        <span>Account No: <strong>77770113307348</strong></span>
+                        <button type="button" onClick={() => handleCopy('77770113307348', 'A/C')} style={{border: 'none', background: 'transparent', color: 'var(--primary-color)', cursor: 'pointer', fontSize: '0.8rem', textDecoration: 'underline'}}>
+                          {copiedText === 'A/C' ? '✓ Copied' : 'Copy'}
+                        </button>
+                      </div>
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                        <span>IFSC: <strong>FDRL0007777</strong></span>
+                        <button type="button" onClick={() => handleCopy('FDRL0007777', 'IFSC')} style={{border: 'none', background: 'transparent', color: 'var(--primary-color)', cursor: 'pointer', fontSize: '0.8rem', textDecoration: 'underline'}}>
+                          {copiedText === 'IFSC' ? '✓ Copied' : 'Copy'}
+                        </button>
+                      </div>
+                      <div>Payee: <strong>Ammaji Fashions</strong></div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
             
             <div style={{textAlign: 'center', marginTop: '2.5rem'}}>
-              {paymentMethod !== 'UPI_QR' && (
-                <p style={{marginBottom: '1.25rem'}}>
-                  Pay <strong>₹{amountToPayToday}</strong> ({paymentType === 'ADVANCE_20' ? '20% Advance' : 'Full Payment'}) via {paymentMethod}
-                </p>
-              )}
-              <div style={{display: 'flex', gap: '1.5rem', justifyContent: 'center'}}>
-                {paymentMethod !== 'UPI_QR' && (
-                  <button onClick={() => handlePayment(true)} className="btn btn-primary" style={{backgroundColor: 'var(--success-color)', padding: '1rem 2rem'}} disabled={loading}>
-                    {loading ? 'Processing...' : `Pay ₹${amountToPayToday}`}
-                  </button>
-                )}
-                <button onClick={() => handlePayment(false)} className="btn btn-outline" style={{borderColor: 'var(--error-color)', color: 'var(--error-color)', padding: '0.85rem 2rem'}} disabled={loading}>
-                  ✕ Cancel Order
+              <p style={{marginBottom: '1.25rem', fontSize: '1rem', color: 'var(--text-muted)'}}>
+                Amount to Pay Today: <strong style={{color: 'var(--primary-color)', fontSize: '1.25rem'}}>₹{amountToPayToday}</strong> ({paymentType === 'ADVANCE_20' ? '20% Advance Booking' : 'Full Payment'})
+              </p>
+              <div style={{display: 'flex', gap: '1.25rem', justifyContent: 'center', flexWrap: 'wrap'}}>
+                <button 
+                  type="button"
+                  onClick={() => handlePayment(true)} 
+                  className="btn btn-primary" 
+                  style={{
+                    backgroundColor: '#16A34A', 
+                    borderColor: '#16A34A', 
+                    color: '#ffffff', 
+                    padding: '0.95rem 3rem', 
+                    fontSize: '1.1rem', 
+                    fontWeight: 'bold', 
+                    borderRadius: '8px', 
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(22, 163, 74, 0.3)'
+                  }} 
+                  disabled={loading}
+                >
+                  {loading ? 'Processing Payment...' : `Pay ₹${amountToPayToday}`}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => handlePayment(false)} 
+                  className="btn btn-outline" 
+                  style={{
+                    borderColor: 'var(--error-color)', 
+                    color: 'var(--error-color)', 
+                    padding: '0.95rem 2rem', 
+                    fontSize: '1rem', 
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }} 
+                  disabled={loading}
+                >
+                  Cancel
                 </button>
               </div>
             </div>

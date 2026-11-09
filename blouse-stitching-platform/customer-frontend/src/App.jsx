@@ -34,6 +34,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/checkout" element={<Checkout />} />
             <Route path="/checkout/:id" element={<Checkout />} />
             <Route path="/success" element={<Success />} />
             <Route path="/track" element={<TrackOrder />} />
