@@ -381,54 +381,16 @@ _Sent via Ammaji Fashions Customer Portal_`;
 
       {/* REVIEWS */}
       <section className="section" style={{background: 'var(--bg-surface-elevated)'}}>
-        <div className="container">
+        <div className="container" style={{maxWidth: '800px', textAlign: 'center'}}>
           <h2 className="section-title">Customer <span>Reviews</span></h2>
-          <p style={{textAlign: 'center', color: 'var(--text-muted)', marginBottom: '3rem', maxWidth: '600px', margin: '0 auto 3rem'}}>
-            See what our beautiful brides and clients have to say about our custom tailoring and embroidery services.
-          </p>
-          
-          <div className="grid-3">
-            <div className="card" style={{padding: '2rem'}}>
-              <div style={{color: '#F59E0B', fontSize: '1.4rem', marginBottom: '1rem'}}>★★★★★</div>
-              <p style={{fontStyle: 'italic', color: 'var(--text-main)', marginBottom: '1.5rem', lineHeight: '1.6'}}>
-                "The heavy maggam work on my bridal blouse was absolutely breathtaking. The fitting was perfect on the first try. Highly recommend!"
-              </p>
-              <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-                <div style={{width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--primary-color)', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold'}}>P</div>
-                <div>
-                  <h4 style={{margin: '0', fontSize: '1rem'}}>Priya Sharma</h4>
-                  <p style={{margin: '0', fontSize: '0.8rem', color: 'var(--text-muted)'}}>Verified Bridal Client</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="card" style={{padding: '2rem'}}>
-              <div style={{color: '#F59E0B', fontSize: '1.4rem', marginBottom: '1rem'}}>★★★★★</div>
-              <p style={{fontStyle: 'italic', color: 'var(--text-main)', marginBottom: '1.5rem', lineHeight: '1.6'}}>
-                "I loved the convenience of sending my measurements online and having fabric picked up from my doorstep. The tracking kept me updated at every step!"
-              </p>
-              <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-                <div style={{width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--primary-color)', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold'}}>A</div>
-                <div>
-                  <h4 style={{margin: '0', fontSize: '1rem'}}>Anjali Desai</h4>
-                  <p style={{margin: '0', fontSize: '0.8rem', color: 'var(--text-muted)'}}>Verified Client</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="card" style={{padding: '2rem'}}>
-              <div style={{color: '#F59E0B', fontSize: '1.4rem', marginBottom: '1rem'}}>★★★★★</div>
-              <p style={{fontStyle: 'italic', color: 'var(--text-main)', marginBottom: '1.5rem', lineHeight: '1.6'}}>
-                "The temple silk embroidery design is so neat and elegant. Excellent customer service over WhatsApp when I needed to adjust my sleeve length."
-              </p>
-              <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-                <div style={{width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--primary-color)', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold'}}>M</div>
-                <div>
-                  <h4 style={{margin: '0', fontSize: '1rem'}}>Meera Reddy</h4>
-                  <p style={{margin: '0', fontSize: '0.8rem', color: 'var(--text-muted)'}}>Verified Client</p>
-                </div>
-              </div>
-            </div>
+          <div className="card" style={{padding: '3.5rem 2rem', marginTop: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.04)'}}>
+            <div style={{fontSize: '3rem', marginBottom: '1rem'}}>⭐✨</div>
+            <h3 style={{fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--text-main)'}}>
+              This feature is coming soon ..!!!
+            </h3>
+            <p style={{color: 'var(--text-muted)', fontSize: '1rem', maxWidth: '520px', margin: '0 auto', lineHeight: '1.6'}}>
+              We are currently gathering verified reviews and photos from our boutique clients. Customer reviews, ratings, and bridal testimonials will be available here soon!
+            </p>
           </div>
         </div>
       </section>

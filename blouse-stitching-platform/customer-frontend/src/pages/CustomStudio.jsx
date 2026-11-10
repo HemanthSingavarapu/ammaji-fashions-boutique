@@ -75,8 +75,26 @@ function CustomStudio() {
     });
   };
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="section container" style={{maxWidth: '1100px'}}>
+      <div style={{marginBottom: '1.5rem'}}>
+        <button 
+          onClick={handleBack} 
+          className="btn btn-outline" 
+          style={{padding: '0.45rem 1rem', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer'}}
+        >
+          ← Back
+        </button>
+      </div>
+
       <div style={{textAlign: 'center', marginBottom: '3rem'}}>
         <span style={{fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--primary-color)', fontWeight: 700, letterSpacing: '1.5px'}}>
           Bespoke Atelier Configurator
