@@ -551,7 +551,7 @@ _Sent via Ammaji Fashions Customer Portal_`;
                     <input 
                       type="text" 
                       required 
-                      placeholder="e.g. Radhika Iyer"
+                      placeholder="your name"
                       value={consultData.name} 
                       onChange={e => setConsultData({...consultData, name: e.target.value})}
                       style={{width: '100%', padding: '0.65rem', border: '1px solid var(--border-color)', borderRadius: '4px'}}
@@ -563,7 +563,7 @@ _Sent via Ammaji Fashions Customer Portal_`;
                     <input 
                       type="tel" 
                       required 
-                      placeholder="e.g. 9876543210"
+                      placeholder="9999999999"
                       value={consultData.phone} 
                       onChange={e => setConsultData({...consultData, phone: e.target.value})}
                       style={{width: '100%', padding: '0.65rem', border: '1px solid var(--border-color)', borderRadius: '4px'}}

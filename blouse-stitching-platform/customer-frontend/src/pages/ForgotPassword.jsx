@@ -140,7 +140,7 @@ function ForgotPassword() {
               <input
                 type="email"
                 className="form-control"
-                placeholder="e.g. priya@example.com"
+                placeholder="xyz@gmail.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
@@ -152,7 +152,7 @@ function ForgotPassword() {
               <input
                 type="tel"
                 className="form-control"
-                placeholder="10-digit registered number"
+                placeholder="9999999999"
                 maxLength="10"
                 value={mobile}
                 onChange={e => {
@@ -186,7 +186,7 @@ function ForgotPassword() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   className="form-control"
-                  placeholder="Min 6 characters"
+                  placeholder="new password"
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
                   required
@@ -221,7 +221,7 @@ function ForgotPassword() {
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   className="form-control"
-                  placeholder="Re-enter new password"
+                  placeholder="confirm password"
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
                   required

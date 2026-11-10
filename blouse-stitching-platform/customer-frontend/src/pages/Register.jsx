@@ -149,13 +149,13 @@ function Register() {
           <div className="responsive-form-grid">
             <div className="form-group" style={{marginBottom: 0}}>
               <label className="form-label">Full Name <span style={{color: 'red'}}>*</span></label>
-              <input type="text" className={`form-control ${formErrors.name ? 'input-error' : ''}`} name="name" value={formData.name} onChange={handleChange} required placeholder="e.g. Priya Sharma" />
+              <input type="text" className={`form-control ${formErrors.name ? 'input-error' : ''}`} name="name" value={formData.name} onChange={handleChange} required placeholder="your name" />
               <ErrorMsg msg={formErrors.name} />
             </div>
             
             <div className="form-group" style={{marginBottom: 0}}>
               <label className="form-label">Email Address <span style={{color: 'red'}}>*</span></label>
-              <input type="email" className={`form-control ${formErrors.email ? 'input-error' : ''}`} name="email" value={formData.email} onChange={handleChange} required placeholder="priya@example.com" />
+              <input type="email" className={`form-control ${formErrors.email ? 'input-error' : ''}`} name="email" value={formData.email} onChange={handleChange} required placeholder="xyz@gmail.com" />
               <ErrorMsg msg={formErrors.email} />
             </div>
           </div>
@@ -171,7 +171,7 @@ function Register() {
                   value={formData.password} 
                   onChange={handleChange} 
                   required 
-                  placeholder="Min 6 characters" 
+                  placeholder="password" 
                   style={{paddingRight: '2.75rem'}}
                 />
                 <button
@@ -208,6 +208,7 @@ function Register() {
                   value={formData.confirmPassword} 
                   onChange={handleChange} 
                   required 
+                  placeholder="confirm password"
                   style={{paddingRight: '2.75rem'}}
                 />
                 <button
@@ -238,32 +239,32 @@ function Register() {
           <div className="responsive-form-grid">
             <div className="form-group" style={{marginBottom: 0}}>
               <label className="form-label">Mobile Number <span style={{color: 'red'}}>*</span></label>
-              <input type="tel" className={`form-control ${formErrors.mobile ? 'input-error' : ''}`} name="mobile" value={formData.mobile} onChange={handleChange} required placeholder="10-digit mobile number" maxLength="10" />
+              <input type="tel" className={`form-control ${formErrors.mobile ? 'input-error' : ''}`} name="mobile" value={formData.mobile} onChange={handleChange} required placeholder="9999999999" maxLength="10" />
               <ErrorMsg msg={formErrors.mobile} />
             </div>
             
             <div className="form-group" style={{marginBottom: 0}}>
               <label className="form-label">Pincode <span style={{color: 'red'}}>*</span></label>
-              <input type="text" className={`form-control ${formErrors.pincode ? 'input-error' : ''}`} name="pincode" value={formData.pincode} onChange={handleChange} required maxLength="6" />
+              <input type="text" className={`form-control ${formErrors.pincode ? 'input-error' : ''}`} name="pincode" value={formData.pincode} onChange={handleChange} required maxLength="6" placeholder="pincode" />
               <ErrorMsg msg={formErrors.pincode} />
             </div>
           </div>
 
           <div className="form-group" style={{marginBottom: '1.5rem'}}>
             <label className="form-label">Street Address <span style={{color: 'red'}}>*</span></label>
-            <textarea className={`form-control ${formErrors.address ? 'input-error' : ''}`} name="address" rows="2" value={formData.address} onChange={handleChange} required placeholder="House No, Street, Landmark"></textarea>
+            <textarea className={`form-control ${formErrors.address ? 'input-error' : ''}`} name="address" rows="2" value={formData.address} onChange={handleChange} required placeholder="street address"></textarea>
             <ErrorMsg msg={formErrors.address} />
           </div>
           
           <div className="responsive-form-grid">
             <div className="form-group" style={{marginBottom: 0}}>
               <label className="form-label">City <span style={{color: 'red'}}>*</span></label>
-              <input type="text" className={`form-control ${formErrors.city ? 'input-error' : ''}`} name="city" value={formData.city} onChange={handleChange} required />
+              <input type="text" className={`form-control ${formErrors.city ? 'input-error' : ''}`} name="city" value={formData.city} onChange={handleChange} required placeholder="city" />
               <ErrorMsg msg={formErrors.city} />
             </div>
             <div className="form-group" style={{marginBottom: 0}}>
               <label className="form-label">State</label>
-              <input type="text" className="form-control" name="state" value={formData.state} onChange={handleChange} />
+              <input type="text" className="form-control" name="state" value={formData.state} onChange={handleChange} placeholder="state" />
             </div>
           </div>
           

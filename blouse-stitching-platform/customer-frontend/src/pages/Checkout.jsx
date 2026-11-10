@@ -734,7 +734,7 @@ function Checkout() {
                       <input 
                         type="text" 
                         className="form-control" 
-                        placeholder="e.g. Radhika Iyer" 
+                        placeholder="name on card" 
                         value={paymentDetails.cardName} 
                         onChange={(e) => setPaymentDetails({...paymentDetails, cardName: e.target.value})} 
                       />

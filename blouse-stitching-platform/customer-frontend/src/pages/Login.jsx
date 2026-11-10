@@ -113,7 +113,7 @@ function Login() {
               type="text" 
               className={`form-control ${formErrors.email ? 'input-error' : ''}`} 
               name="email" 
-              placeholder="e.g. priya@example.com or 9876543210"
+              placeholder="xyz@gmail.com or 999999999"
               value={formData.email} 
               onChange={handleChange} 
               required 
@@ -128,6 +128,7 @@ function Login() {
                 type={showPassword ? 'text' : 'password'} 
                 className={`form-control ${formErrors.password ? 'input-error' : ''}`} 
                 name="password" 
+                placeholder="password"
                 value={formData.password} 
                 onChange={handleChange} 
                 required 
