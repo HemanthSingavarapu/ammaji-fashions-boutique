@@ -1,6 +1,17 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { 
+  HeartIcon, 
+  SparklesIcon, 
+  ScissorsIcon, 
+  TruckIcon, 
+  TapeMeasureIcon, 
+  ClockIcon, 
+  CreditCardIcon, 
+  WhatsAppIcon, 
+  MapPinIcon 
+} from '../components/Icons';
 import api from '../services/api';
 
 function DesignDetails() {
@@ -141,7 +152,7 @@ function DesignDetails() {
               }}
               title={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
             >
-              {isWishlisted ? '❤️' : '🤍'}
+              <HeartIcon size={20} fill={isWishlisted ? 'var(--primary-color)' : 'none'} color="var(--primary-color)" />
             </button>
           </div>
 
@@ -184,7 +195,7 @@ function DesignDetails() {
             borderTop: '1px solid var(--border-color)'
           }}>
             <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
-              <span style={{fontSize: '1.4rem'}}>✨</span>
+              <SparklesIcon size={20} color="var(--primary-color)" />
               <div style={{fontSize: '0.82rem', lineHeight: 1.3}}>
                 <strong style={{display: 'block', color: 'var(--text-main)'}}>Flawless Fit Guarantee</strong>
                 <span style={{color: 'var(--text-muted)'}}>Complimentary alteration</span>
@@ -192,7 +203,7 @@ function DesignDetails() {
             </div>
 
             <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
-              <span style={{fontSize: '1.4rem'}}>🧵</span>
+              <ScissorsIcon size={20} color="var(--primary-color)" />
               <div style={{fontSize: '0.82rem', lineHeight: 1.3}}>
                 <strong style={{display: 'block', color: 'var(--text-main)'}}>Pure Cotton Lining</strong>
                 <span style={{color: 'var(--text-muted)'}}>Pre-washed, stitched free</span>
@@ -200,7 +211,7 @@ function DesignDetails() {
             </div>
 
             <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
-              <span style={{fontSize: '1.4rem'}}>🚚</span>
+              <TruckIcon size={20} color="var(--primary-color)" />
               <div style={{fontSize: '0.82rem', lineHeight: 1.3}}>
                 <strong style={{display: 'block', color: 'var(--text-main)'}}>Doorstep Fabric Valet</strong>
                 <span style={{color: 'var(--text-muted)'}}>Pickup from your home</span>
@@ -208,7 +219,7 @@ function DesignDetails() {
             </div>
 
             <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
-              <span style={{fontSize: '1.4rem'}}>✂️</span>
+              <ScissorsIcon size={20} color="var(--primary-color)" />
               <div style={{fontSize: '0.82rem', lineHeight: 1.3}}>
                 <strong style={{display: 'block', color: 'var(--text-main)'}}>Master Tailor Crafted</strong>
                 <span style={{color: 'var(--text-muted)'}}>30+ years atelier experience</span>
@@ -267,14 +278,14 @@ function DesignDetails() {
 
           {/* Specification Pills */}
           <div style={{display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '2rem'}}>
-            <span style={{fontSize: '0.82rem', padding: '0.4rem 0.8rem', background: 'var(--bg-surface-elevated)', borderRadius: '20px', border: '1px solid var(--border-color)'}}>
-              📏 Fabric: <strong>0.80m – 1.00m</strong>
+            <span style={{fontSize: '0.82rem', padding: '0.4rem 0.8rem', background: 'var(--bg-surface-elevated)', borderRadius: '20px', border: '1px solid var(--border-color)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}>
+              <TapeMeasureIcon size={14} color="var(--primary-color)" /> <span>Fabric: <strong>0.80m – 1.00m</strong></span>
             </span>
-            <span style={{fontSize: '0.82rem', padding: '0.4rem 0.8rem', background: 'var(--bg-surface-elevated)', borderRadius: '20px', border: '1px solid var(--border-color)'}}>
-              ⏱️ Completion: <strong>4 – 6 Business Days</strong>
+            <span style={{fontSize: '0.82rem', padding: '0.4rem 0.8rem', background: 'var(--bg-surface-elevated)', borderRadius: '20px', border: '1px solid var(--border-color)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}>
+              <ClockIcon size={14} color="var(--primary-color)" /> <span>Completion: <strong>4 – 6 Business Days</strong></span>
             </span>
-            <span style={{fontSize: '0.82rem', padding: '0.4rem 0.8rem', background: 'var(--bg-surface-elevated)', borderRadius: '20px', border: '1px solid var(--border-color)'}}>
-              💳 Booking: <strong>20% Advance Available</strong>
+            <span style={{fontSize: '0.82rem', padding: '0.4rem 0.8rem', background: 'var(--bg-surface-elevated)', borderRadius: '20px', border: '1px solid var(--border-color)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}>
+              <CreditCardIcon size={14} color="var(--primary-color)" /> <span>Booking: <strong>20% Advance Available</strong></span>
             </span>
           </div>
 
@@ -290,10 +301,14 @@ function DesignDetails() {
                 fontSize: '1.05rem', 
                 textAlign: 'center', 
                 textDecoration: 'none',
-                fontWeight: 600
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.4rem'
               }}
             >
-              Order This Design ✨
+              Order This Design
             </Link>
 
             <a 
@@ -312,7 +327,7 @@ function DesignDetails() {
                 fontWeight: 600
               }}
             >
-              💬 Stylist WhatsApp
+              <WhatsAppIcon size={16} /> Stylist WhatsApp
             </a>
           </div>
 
@@ -323,8 +338,9 @@ function DesignDetails() {
             borderRadius: '8px', 
             border: '1px solid var(--border-color)'
           }}>
-            <div style={{fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.5rem'}}>
-              📍 Doorstep Pickup & Delivery Availability
+            <div style={{fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem'}}>
+              <MapPinIcon size={16} color="var(--primary-color)" />
+              <span>Doorstep Pickup & Delivery Availability</span>
             </div>
             <form onSubmit={handleCheckPincode} style={{display: 'flex', gap: '0.5rem'}}>
               <input 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { SearchIcon, HeartIcon } from '../components/Icons';
 import api from '../services/api';
 
 function Catalogue() {
@@ -105,7 +106,9 @@ function Catalogue() {
             </select>
             
             <div style={{position: 'relative', flex: 1, minWidth: '150px'}}>
-              <span style={{position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5}}>🔍</span>
+              <span style={{position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, display: 'flex', alignItems: 'center'}}>
+                <SearchIcon size={16} />
+              </span>
               <input 
                 type="text" 
                 className="form-control search-input" 
@@ -127,7 +130,9 @@ function Catalogue() {
         </div>
       ) : filteredDesigns.length === 0 ? (
         <div style={{textAlign: 'center', padding: '6rem 2rem', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-lg)', marginTop: '2rem'}}>
-          <div style={{fontSize: '4rem', marginBottom: '1rem', opacity: 0.8}}>🔍</div>
+          <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(0,0,0,0.04)', color: 'var(--text-muted)', marginBottom: '1.25rem'}}>
+            <SearchIcon size={36} />
+          </div>
           <h3 style={{fontSize: '1.8rem', marginBottom: '0.5rem', fontFamily: 'var(--font-serif)'}}>No designs found</h3>
           <p style={{fontSize: '1.1rem', color: 'var(--text-muted)', maxWidth: '400px', margin: '0 auto'}}>Try adjusting your filters or clearing search terms.</p>
           <button onClick={() => {setSearchTerm(''); setSelectedCategory('All');}} className="btn btn-primary" style={{marginTop: '2rem'}}>Clear All Filters</button>
@@ -148,13 +153,13 @@ function Catalogue() {
                   borderRadius: '50%', width: '42px', height: '42px', display: 'flex', alignItems: 'center', 
                   justifyContent: 'center', cursor: 'pointer', zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                   color: wishlist.includes(design.id) ? 'var(--error-color)' : '#bbb',
-                  fontSize: '1.3rem', transition: 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease'
+                  transition: 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease'
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 title={wishlist.includes(design.id) ? "Remove from Wishlist" : "Add to Wishlist"}
               >
-                {wishlist.includes(design.id) ? '❤️' : '🤍'}
+                <HeartIcon size={18} fill={wishlist.includes(design.id) ? 'var(--primary-color)' : 'none'} color="var(--primary-color)" />
               </button>
               
               <Link to={`/design/${design.id}`} style={{textDecoration: 'none', color: 'inherit'}}>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { WhatsAppIcon } from './Icons';
 
 export default function WhatsAppWidget() {
   return (
@@ -18,7 +19,6 @@ export default function WhatsAppWidget() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '35px',
         boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
         zIndex: 1000,
         textDecoration: 'none',
@@ -26,10 +26,9 @@ export default function WhatsAppWidget() {
       }}
       onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
       onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+      title="Chat with us on WhatsApp"
     >
-      <i className="fab fa-whatsapp" style={{lineHeight: '60px'}}></i>
-      {/* Fallback text icon if font-awesome isn't loaded */}
-      <span style={{position: 'absolute', fontSize: '1.8rem'}}>💬</span>
+      <WhatsAppIcon size={32} color="#ffffff" />
     </a>
   );
 }

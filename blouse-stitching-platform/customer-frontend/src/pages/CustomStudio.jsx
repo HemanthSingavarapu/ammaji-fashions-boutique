@@ -1,5 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeftIcon, 
+  HeartIcon, 
+  CrownIcon, 
+  SewingIcon, 
+  ZapIcon, 
+  DiamondIcon, 
+  DressIcon, 
+  RibbonIcon, 
+  SparklesIcon, 
+  KeyIcon, 
+  MoonIcon, 
+  RulerIcon, 
+  ScissorsIcon 
+} from '../components/Icons';
 
 function CustomStudio() {
   const navigate = useNavigate();
@@ -16,29 +31,29 @@ function CustomStudio() {
   const basePrice = 1200;
 
   const frontNeckOptions = [
-    { name: 'Sweetheart Neck', price: 150, desc: 'Flattering heart-shaped curve, ideal for bridal & party wear', icon: '💖' },
-    { name: 'Royal Boat Neck', price: 120, desc: 'High elegant horizontal neck drop, perfect for silk sarees', icon: '👑' },
-    { name: 'Classic Deep Round', price: 0, desc: 'Timeless traditional round cut with comfortable fit', icon: '⭕' },
-    { name: 'Deep V Plunge', price: 100, desc: 'Modern sleek neckline, lengthens neckline appearance', icon: '⚡' },
-    { name: 'Queen Anne Cut', price: 220, desc: 'Regal vintage neckline with scalloped shoulders', icon: '💎' },
-    { name: 'High Mandarin Collar', price: 250, desc: 'Contemporary bandhgala neck with front hook closure', icon: '🧥' }
+    { name: 'Sweetheart Neck', price: 150, desc: 'Flattering heart-shaped curve, ideal for bridal & party wear', icon: <HeartIcon size={20} /> },
+    { name: 'Royal Boat Neck', price: 120, desc: 'High elegant horizontal neck drop, perfect for silk sarees', icon: <CrownIcon size={20} /> },
+    { name: 'Classic Deep Round', price: 0, desc: 'Timeless traditional round cut with comfortable fit', icon: <SewingIcon size={20} /> },
+    { name: 'Deep V Plunge', price: 100, desc: 'Modern sleek neckline, lengthens neckline appearance', icon: <ZapIcon size={20} /> },
+    { name: 'Queen Anne Cut', price: 220, desc: 'Regal vintage neckline with scalloped shoulders', icon: <DiamondIcon size={20} /> },
+    { name: 'High Mandarin Collar', price: 250, desc: 'Contemporary bandhgala neck with front hook closure', icon: <DressIcon size={20} /> }
   ];
 
   const backDesignOptions = [
-    { name: 'Deep Back with Dori & Tassels', price: 200, desc: 'Dramatic deep U back tied with custom handmade tassels', icon: '🎀' },
-    { name: 'Backless with Multi-Strings', price: 350, desc: 'Bold crisscross string closure with secure side boning', icon: '✨' },
-    { name: 'Lotus / Drop Cutout', price: 300, desc: 'Artistic teardrop or temple cutout in center of back', icon: '🪷' },
-    { name: 'Potli Button Row', price: 250, desc: 'Hand-sewn fabric potli buttons running down center back', icon: '🔘' },
-    { name: 'Keyhole Window with Button', price: 180, desc: 'Chic oval keyhole opening with upper loop closure', icon: '🗝️' },
-    { name: 'Classic Modest U', price: 0, desc: 'Standard 7-8 inch modest back drop for everyday elegance', icon: '🌙' }
+    { name: 'Deep Back with Dori & Tassels', price: 200, desc: 'Dramatic deep U back tied with custom handmade tassels', icon: <RibbonIcon size={20} /> },
+    { name: 'Backless with Multi-Strings', price: 350, desc: 'Bold crisscross string closure with secure side boning', icon: <SparklesIcon size={20} /> },
+    { name: 'Lotus / Drop Cutout', price: 300, desc: 'Artistic teardrop or temple cutout in center of back', icon: <DiamondIcon size={20} /> },
+    { name: 'Potli Button Row', price: 250, desc: 'Hand-sewn fabric potli buttons running down center back', icon: <SewingIcon size={20} /> },
+    { name: 'Keyhole Window with Button', price: 180, desc: 'Chic oval keyhole opening with upper loop closure', icon: <KeyIcon size={20} /> },
+    { name: 'Classic Modest U', price: 0, desc: 'Standard 7-8 inch modest back drop for everyday elegance', icon: <MoonIcon size={20} /> }
   ];
 
   const sleeveOptions = [
-    { name: 'Elbow Length with Border', price: 200, desc: 'Trending 10-11 inch sleeve highlighting saree zari border', icon: '📏' },
-    { name: 'Classic Short Sleeves (5")', price: 80, desc: 'Traditional short sleeve with neat hem stitching', icon: '✂️' },
-    { name: 'Sleeveless / Wide Straps', price: 0, desc: 'Clean modern sleeveless finish with concealed piping', icon: '🎽' },
-    { name: 'Puff / Princess Balloon Sleeves', price: 320, desc: 'Vintage pleated gathered shoulder with snug cuff', icon: '🎈' },
-    { name: 'Full Length Sheer Sleeves', price: 400, desc: 'Elegant translucent net/organza sleeve with wrist cuff', icon: '🧤' }
+    { name: 'Elbow Length with Border', price: 200, desc: 'Trending 10-11 inch sleeve highlighting saree zari border', icon: <RulerIcon size={20} /> },
+    { name: 'Classic Short Sleeves (5")', price: 80, desc: 'Traditional short sleeve with neat hem stitching', icon: <ScissorsIcon size={20} /> },
+    { name: 'Sleeveless / Wide Straps', price: 0, desc: 'Clean modern sleeveless finish with concealed piping', icon: <DressIcon size={20} /> },
+    { name: 'Puff / Princess Balloon Sleeves', price: 320, desc: 'Vintage pleated gathered shoulder with snug cuff', icon: <SparklesIcon size={20} /> },
+    { name: 'Full Length Sheer Sleeves', price: 400, desc: 'Elegant translucent net/organza sleeve with wrist cuff', icon: <RulerIcon size={20} /> }
   ];
 
   const fabricOptions = [
@@ -91,7 +106,7 @@ function CustomStudio() {
           className="btn btn-outline" 
           style={{padding: '0.45rem 1rem', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer'}}
         >
-          ← Back
+          <ArrowLeftIcon size={16} /> Back
         </button>
       </div>
 
@@ -100,7 +115,7 @@ function CustomStudio() {
           Bespoke Atelier Configurator
         </span>
         <h1 style={{fontSize: '3rem', margin: '0.5rem 0 1rem 0', fontFamily: 'var(--font-serif)'}}>
-          Design Your <span>Dream Blouse</span> 🧵
+          Design Your <span>Dream Blouse</span>
         </h1>
         <p style={{color: 'var(--text-muted)', maxWidth: '650px', margin: '0 auto', fontSize: '1.05rem'}}>
           Configure your neckline, back pattern, sleeves, and artisan details. Our master tailors will handcraft your design to perfection.
@@ -139,7 +154,19 @@ function CustomStudio() {
                       gap: '0.75rem'
                     }}
                   >
-                    <span style={{fontSize: '1.5rem'}}>{opt.icon}</span>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      background: isSelected ? 'rgba(155, 35, 53, 0.12)' : 'rgba(0,0,0,0.04)',
+                      color: isSelected ? 'var(--primary-color)' : 'var(--text-muted)',
+                      flexShrink: 0
+                    }}>
+                      {opt.icon}
+                    </span>
                     <div style={{flex: 1}}>
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline'}}>
                         <strong style={{fontSize: '0.95rem', color: isSelected ? 'var(--primary-color)' : 'var(--text-main)'}}>{opt.name}</strong>
@@ -181,7 +208,19 @@ function CustomStudio() {
                       gap: '0.75rem'
                     }}
                   >
-                    <span style={{fontSize: '1.5rem'}}>{opt.icon}</span>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      background: isSelected ? 'rgba(155, 35, 53, 0.12)' : 'rgba(0,0,0,0.04)',
+                      color: isSelected ? 'var(--primary-color)' : 'var(--text-muted)',
+                      flexShrink: 0
+                    }}>
+                      {opt.icon}
+                    </span>
                     <div style={{flex: 1}}>
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline'}}>
                         <strong style={{fontSize: '0.95rem', color: isSelected ? 'var(--primary-color)' : 'var(--text-main)'}}>{opt.name}</strong>
@@ -223,7 +262,19 @@ function CustomStudio() {
                       gap: '0.75rem'
                     }}
                   >
-                    <span style={{fontSize: '1.5rem'}}>{opt.icon}</span>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      background: isSelected ? 'rgba(155, 35, 53, 0.12)' : 'rgba(0,0,0,0.04)',
+                      color: isSelected ? 'var(--primary-color)' : 'var(--text-muted)',
+                      flexShrink: 0
+                    }}>
+                      {opt.icon}
+                    </span>
                     <div style={{flex: 1}}>
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline'}}>
                         <strong style={{fontSize: '0.95rem', color: isSelected ? 'var(--primary-color)' : 'var(--text-main)'}}>{opt.name}</strong>

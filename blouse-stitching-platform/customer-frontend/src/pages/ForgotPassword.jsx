@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { LockIcon, AlertCircleIcon, CheckCircleIcon, ShieldCheckIcon } from '../components/Icons';
 import api from '../services/api';
 
 function ForgotPassword() {
@@ -95,7 +96,7 @@ function ForgotPassword() {
         newPassword: newPassword
       });
 
-      setSuccessMsg("🎉 Password reset successfully! Redirecting to login...");
+      setSuccessMsg("Password reset successfully! Redirecting to login...");
       setTimeout(() => {
         navigate('/login');
       }, 2000);
@@ -113,7 +114,9 @@ function ForgotPassword() {
         
         {/* Header */}
         <div style={{textAlign: 'center', marginBottom: '2rem'}}>
-          <div style={{fontSize: '2.5rem', marginBottom: '0.5rem'}}>🔐</div>
+          <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(155, 35, 53, 0.08)', color: 'var(--primary-color)', marginBottom: '0.75rem'}}>
+            <LockIcon size={28} />
+          </div>
           <h2 className="section-title" style={{marginBottom: '0.4rem'}}>Reset Password</h2>
           <p style={{color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0}}>
             {step === 1 ? 'Verify your identity to set a new password' : `Welcome, ${userName}! Set your new password`}
@@ -121,14 +124,16 @@ function ForgotPassword() {
         </div>
 
         {error && (
-          <div style={{backgroundColor: 'var(--error-color)', color: '#fff', padding: '0.85rem 1rem', borderRadius: '6px', marginBottom: '1.5rem', fontSize: '0.9rem'}}>
-            ⚠️ {error}
+          <div style={{backgroundColor: 'var(--error-color)', color: '#fff', padding: '0.85rem 1rem', borderRadius: '6px', marginBottom: '1.5rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem'}}>
+            <AlertCircleIcon size={16} color="#fff" />
+            <span>{error}</span>
           </div>
         )}
 
         {successMsg && (
-          <div style={{backgroundColor: '#10B981', color: '#fff', padding: '1rem', borderRadius: '6px', marginBottom: '1.5rem', fontSize: '0.92rem', textAlign: 'center', fontWeight: 600}}>
-            {successMsg}
+          <div style={{backgroundColor: '#10B981', color: '#fff', padding: '1rem', borderRadius: '6px', marginBottom: '1.5rem', fontSize: '0.92rem', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'}}>
+            <CheckCircleIcon size={20} color="#fff" />
+            <span>{successMsg}</span>
           </div>
         )}
 
@@ -161,8 +166,8 @@ function ForgotPassword() {
                 }}
                 required
               />
-              <small style={{color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block', marginTop: '0.35rem'}}>
-                🔒 Free instant verification • No waiting for SMS or OTP delays
+              <small style={{color: 'var(--text-muted)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.35rem'}}>
+                <ShieldCheckIcon size={14} color="var(--primary-color)" /> Free instant verification • No waiting for SMS or OTP delays
               </small>
             </div>
 

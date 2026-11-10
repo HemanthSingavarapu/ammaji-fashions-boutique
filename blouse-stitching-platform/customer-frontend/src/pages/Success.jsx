@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { 
+  CheckCircleIcon, 
+  HourglassIcon, 
+  DownloadIcon, 
+  PrinterIcon, 
+  MapPinIcon, 
+  WhatsAppIcon, 
+  InfoIcon, 
+  ArrowLeftIcon 
+} from '../components/Icons';
 import api from '../services/api';
 
 function Success() {
@@ -89,22 +99,21 @@ function Success() {
       }}>
         <div style={{display: 'flex', alignItems: 'center', gap: '0.85rem'}}>
           <div style={{
-            background: isUnderReview ? '#EAB308' : '#10B981', 
-            color: '#fff', 
+            background: isUnderReview ? '#FEF3C7' : '#DCFCE7', 
+            color: isUnderReview ? '#854D0E' : '#065F46', 
             borderRadius: '50%', 
             width: '40px', 
             height: '40px', 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center',
-            fontSize: '1.3rem',
-            fontWeight: 'bold'
+            flexShrink: 0
           }}>
-            {isUnderReview ? '⏳' : '✓'}
+            {isUnderReview ? <HourglassIcon size={20} color="#854D0E" /> : <CheckCircleIcon size={20} color="#065F46" />}
           </div>
           <div>
             <h3 style={{margin: 0, color: isUnderReview ? '#854D0E' : '#065F46', fontSize: '1.25rem', fontWeight: 800}}>
-              {isUnderReview ? 'Order Placed & Payment Under Review ⏳' : 'Payment Confirmed & Order Placed! 🎉'}
+              {isUnderReview ? 'Order Placed & Payment Under Review' : 'Payment Confirmed & Order Placed!'}
             </h3>
             <p style={{margin: '0.15rem 0 0 0', color: isUnderReview ? '#A16207' : '#047857', fontSize: '0.9rem'}}>
               {isUnderReview 
@@ -124,22 +133,22 @@ function Success() {
             className="btn btn-outline" 
             style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', background: '#fff', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}
           >
-            📥 PDF Invoice
+            <DownloadIcon size={14} /> PDF Invoice
           </a>
           <button 
             onClick={() => window.print()} 
             className="btn btn-outline" 
-            style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', background: '#fff'}}
+            style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', background: '#fff', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}
           >
-            🖨️ Print
+            <PrinterIcon size={14} /> Print
           </button>
           <Link 
             to="/track" 
             className="btn btn-primary" 
             state={{ orderNumber: order.orderNumber }}
-            style={{padding: '0.45rem 1rem', fontSize: '0.85rem'}}
+            style={{padding: '0.45rem 1rem', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}
           >
-            Track Order 📍
+            Track Order <MapPinIcon size={14} />
           </Link>
         </div>
       </div>
@@ -197,9 +206,12 @@ function Success() {
               padding: '0.2rem 0.6rem', 
               borderRadius: '4px', 
               fontWeight: 700, 
-              fontSize: '0.8rem'
+              fontSize: '0.8rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem'
             }}>
-              {isUnderReview ? '⏳ PAYMENT UNDER REVIEW' : `PAID (${isAdvance ? '20% Advance' : 'Full Payment'})`}
+              {isUnderReview ? <><HourglassIcon size={12} color="#92400E" /> PAYMENT UNDER REVIEW</> : `PAID (${isAdvance ? '20% Advance' : 'Full Payment'})`}
             </span>
           </div>
         </div>
@@ -328,8 +340,8 @@ function Success() {
           flexWrap: 'wrap',
           gap: '0.75rem'
         }}>
-          <div>
-            📌 <strong>Note:</strong> Courier bill copy will be shared for your reference upon dispatch.
+          <div style={{display: 'flex', alignItems: 'center', gap: '0.4rem'}}>
+            <InfoIcon size={16} color="var(--primary-color)" /> <span><strong>Note:</strong> Courier bill copy will be shared for your reference upon dispatch.</span>
           </div>
           <a 
             href={`https://wa.me/918341085629?text=Hello%20Ammaji%20Fashions,%20inquiry%20for%20order%20%23${order.orderNumber}%20(Txn%20Ref:%20${transactionNumber})`} 
@@ -337,7 +349,7 @@ function Success() {
             rel="noreferrer" 
             style={{color: '#16A34A', fontWeight: 600, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}
           >
-            💬 WhatsApp Support
+            <WhatsAppIcon size={14} color="#16A34A" /> WhatsApp Support
           </a>
         </div>
 
@@ -345,8 +357,8 @@ function Success() {
 
       {/* Bottom Back Button */}
       <div style={{textAlign: 'center', marginTop: '2rem'}}>
-        <Link to="/profile" style={{color: 'var(--primary-color)', fontSize: '0.95rem', textDecoration: 'underline'}}>
-          ← Back to My Orders
+        <Link to="/profile" style={{color: 'var(--primary-color)', fontSize: '0.95rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}>
+          <ArrowLeftIcon size={14} /> Back to My Orders
         </Link>
       </div>
 

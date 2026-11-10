@@ -1,6 +1,16 @@
 import { useState, useContext, useEffect } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { 
+  QrCodeIcon, 
+  CreditCardIcon, 
+  BankIcon, 
+  TruckIcon, 
+  PackageIcon, 
+  CopyIcon, 
+  ClockIcon, 
+  InfoIcon 
+} from '../components/Icons';
 import api from '../services/api';
 
 function Checkout() {
@@ -396,13 +406,15 @@ function Checkout() {
 
             {/* Note about courier billing */}
             <div style={{background: 'var(--bg-surface-elevated)', padding: '0.85rem 1.25rem', borderRadius: '6px', border: '1px solid var(--border-color)', marginBottom: '1.5rem', fontSize: '0.88rem', color: 'var(--text-muted)'}}>
-              📌 <strong>Note:</strong> Courier charges are not included in the stitching total. We will share the bill copy of the courier for your reference.
+              <span style={{display: 'inline-flex', alignItems: 'center', gap: '0.35rem', verticalAlign: 'middle', marginRight: '4px'}}><InfoIcon size={16} color="var(--primary-color)" /> <strong>Note:</strong></span> Courier charges are not included in the stitching total. We will share the bill copy of the courier for your reference.
             </div>
 
             {/* Doorstep Valet Slot Picker */}
             {courierOption === 'BOUTIQUE' && (
               <div style={{padding: '1.25rem', background: '#F5F3FF', border: '1px solid #DDD6FE', borderRadius: '8px', marginBottom: '1.5rem'}}>
-                <h5 style={{color: '#6D28D9', margin: '0 0 0.75rem 0', fontSize: '0.95rem'}}>🛵 Doorstep Fabric Valet Scheduling</h5>
+                <h5 style={{color: '#6D28D9', margin: '0 0 0.75rem 0', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem'}}>
+                  <TruckIcon size={18} color="#6D28D9" /> Doorstep Fabric Valet Scheduling
+                </h5>
                 <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem'}}>
                   <div>
                     <label style={{display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', fontWeight: 500}}>Pickup Day</label>
@@ -620,16 +632,16 @@ function Checkout() {
 
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
               <h4 style={{margin: 0}}>Select Payment Method</h4>
-              <div style={{color: 'var(--error-color)', fontWeight: 'bold', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-                ⏱️ {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+              <div style={{color: 'var(--error-color)', fontWeight: 'bold', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem'}}>
+                <ClockIcon size={18} color="var(--error-color)" /> {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
               </div>
             </div>
 
             <div style={{display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap'}}>
               {[
-                { id: 'UPI_QR', label: '📱 QR Code (UPI)' },
-                { id: 'Card', label: '💳 Credit / Debit Card' },
-                { id: 'NetBanking', label: '🏦 Net Banking' }
+                { id: 'UPI_QR', label: 'QR Code (UPI)', icon: <QrCodeIcon size={18} /> },
+                { id: 'Card', label: 'Credit / Debit Card', icon: <CreditCardIcon size={18} /> },
+                { id: 'NetBanking', label: 'Net Banking', icon: <BankIcon size={18} /> }
               ].map(item => (
                 <label key={item.id} style={{
                   border: '2px solid',
@@ -647,7 +659,10 @@ function Checkout() {
                   transition: 'all 0.2s ease'
                 }}>
                   <input type="radio" name="paymentMethod" value={item.id} checked={paymentMethod === item.id} onChange={(e) => setPaymentMethod(e.target.value)} />
-                  <span style={{fontSize: '0.95rem'}}>{item.label}</span>
+                  <span style={{display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.95rem'}}>
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </span>
                 </label>
               ))}
             </div>
@@ -685,9 +700,9 @@ function Checkout() {
                         <button 
                           type="button" 
                           onClick={() => handleCopy(displayVpa, 'UPI ID')} 
-                          style={{border: '1px solid #CBD5E1', background: '#F8FAFC', borderRadius: '4px', padding: '3px 8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600}}
+                          style={{border: '1px solid #CBD5E1', background: '#F8FAFC', borderRadius: '4px', padding: '3px 8px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px'}}
                         >
-                          {copiedText === 'UPI ID' ? '✓ Copied!' : '📋 Copy'}
+                          {copiedText === 'UPI ID' ? '✓ Copied!' : <><CopyIcon size={12} /> Copy</>}
                         </button>
                       </div>
                       <div style={{fontSize: '0.85rem', color: 'var(--text-muted)'}}>
@@ -699,7 +714,7 @@ function Checkout() {
                         className="btn btn-outline" 
                         style={{marginTop: '0.25rem', fontSize: '0.85rem', padding: '0.45rem 1rem'}}
                       >
-                        📲 Tap to Pay in Mobile App
+                        Tap to Pay in Mobile App
                       </a>
                     </div>
                   </div>
@@ -802,7 +817,10 @@ function Checkout() {
                   </div>
 
                   <div style={{background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '0.85rem 1rem', fontSize: '0.85rem', color: '#334155'}}>
-                    <div style={{fontWeight: 700, color: 'var(--primary-color)', marginBottom: '0.4rem'}}>🏦 Direct NEFT / IMPS Boutique Account:</div>
+                    <div style={{fontWeight: 700, color: 'var(--primary-color)', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem'}}>
+                      <BankIcon size={16} />
+                      <span>Direct NEFT / IMPS Boutique Account:</span>
+                    </div>
                     <div style={{display: 'flex', flexDirection: 'column', gap: '0.3rem'}}>
                       <div>Bank: <strong>Federal Bank</strong></div>
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -880,7 +898,9 @@ function Checkout() {
               
               {courierOption === 'BOUTIQUE' ? (
                 <div style={{display: 'flex', gap: '1rem', alignItems: 'flex-start'}}>
-                  <div style={{fontSize: '2rem'}}>🚚</div>
+                  <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(155, 35, 53, 0.1)', color: 'var(--primary-color)', flexShrink: 0}}>
+                    <TruckIcon size={26} color="var(--primary-color)" />
+                  </div>
                   <div>
                     <p style={{color: 'var(--text-main)', fontWeight: 'bold'}}>We will pick up your fabric!</p>
                     <p style={{color: 'var(--text-muted)', marginTop: '0.5rem'}}>Please pack your unstitched fabric in a secure package. Our courier partner will pick it up on <strong>{pickupDay} ({pickupSlot})</strong> from your pickup address. Ensure your Order Number ({order.orderNumber}) is written on the package.</p>
@@ -888,7 +908,9 @@ function Checkout() {
                 </div>
               ) : (
                 <div style={{display: 'flex', gap: '1rem', alignItems: 'flex-start'}}>
-                  <div style={{fontSize: '2rem'}}>📦</div>
+                  <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(155, 35, 53, 0.1)', color: 'var(--primary-color)', flexShrink: 0}}>
+                    <PackageIcon size={26} color="var(--primary-color)" />
+                  </div>
                   <div>
                     <p style={{color: 'var(--text-main)', fontWeight: 'bold'}}>Please courier your fabric to us.</p>
                     <p style={{color: 'var(--text-muted)', marginTop: '0.5rem'}}>Pack your unstitched fabric and courier it to our workshop address. You are responsible for the courier charges to send the material to us. Ensure your Order Number ({order.orderNumber}) is written on the package.</p>

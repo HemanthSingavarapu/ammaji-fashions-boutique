@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
+import { 
+  SearchIcon, 
+  CopyIcon, 
+  RefreshIcon, 
+  WhatsAppIcon, 
+  AlertCircleIcon, 
+  InfoIcon 
+} from '../components/Icons';
 import api from '../services/api';
 
 function TrackOrder() {
@@ -103,8 +111,8 @@ function TrackOrder() {
             required
             style={{flex: 1, minWidth: '240px'}}
           />
-          <button type="submit" className="btn btn-primary" style={{padding: '0.8rem 2rem'}} disabled={loading}>
-            {loading ? 'Locating...' : 'Track Order 🔍'}
+          <button type="submit" className="btn btn-primary" style={{padding: '0.8rem 2rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem'}} disabled={loading}>
+            {loading ? 'Locating...' : <><SearchIcon size={16} /> Track Order</>}
           </button>
         </form>
         {error && <p style={{color: 'var(--error-color)', marginTop: '1rem', fontWeight: 500}}>{error}</p>}
@@ -122,9 +130,9 @@ function TrackOrder() {
                 </h3>
                 <button 
                   onClick={handleCopyOrderId}
-                  style={{background: 'none', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--text-muted)'}}
+                  style={{background: 'none', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '3px'}}
                 >
-                  {copied ? '✓ Copied' : '📋 Copy'}
+                  {copied ? '✓ Copied' : <><CopyIcon size={12} /> Copy</>}
                 </button>
               </div>
               <p style={{color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.4rem', margin: 0}}>
@@ -182,8 +190,8 @@ function TrackOrder() {
                 borderRadius: '8px'
               }}>
                 <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem'}}>
-                  <strong style={{color: '#92400E', fontSize: '0.95rem'}}>
-                    🔄 Refund Status: {trackingData.refundStatus === 'REFUND_COMPLETED' ? 'Refund Completed' : 'Refund Processing (Expected within 2 days)'}
+                  <strong style={{color: '#92400E', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.35rem'}}>
+                    <RefreshIcon size={16} color="#92400E" /> Refund Status: {trackingData.refundStatus === 'REFUND_COMPLETED' ? 'Refund Completed' : 'Refund Processing (Expected within 2 days)'}
                   </strong>
                   <span style={{fontSize: '0.8rem', background: '#FEF3C7', color: '#B45309', padding: '0.2rem 0.6rem', borderRadius: '12px', fontWeight: 600}}>
                     Refund: ₹{trackingData.paidAmount != null ? trackingData.paidAmount : (trackingData.paymentType === 'ADVANCE_20' ? Math.round(trackingData.amount * 0.20) : trackingData.amount)}
@@ -198,7 +206,7 @@ function TrackOrder() {
                   rel="noreferrer"
                   style={{color: '#15803D', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}
                 >
-                  💬 Inquire Refund Status on WhatsApp →
+                  <WhatsAppIcon size={14} /> Inquire Refund Status on WhatsApp →
                 </a>
               </div>
             ) : (
@@ -210,11 +218,11 @@ function TrackOrder() {
                 borderRadius: '8px'
               }}>
                 <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem'}}>
-                  <span>🚫</span>
+                  <AlertCircleIcon size={16} color="#6B7280" />
                   <strong style={{color: '#4B5563', fontSize: '0.9rem'}}>Payment Cancelled</strong>
                 </div>
-                <p style={{color: '#6B7280', fontSize: '0.85rem', margin: 0}}>
-                  📌 <strong>Note:</strong> Payment was not completed. If any amount was deducted, it will return in 3 days.
+                <p style={{color: '#6B7280', fontSize: '0.85rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.35rem'}}>
+                  <InfoIcon size={14} color="#6B7280" /> <span><strong>Note:</strong> Payment was not completed. If any amount was deducted, it will return in 3 days.</span>
                 </p>
               </div>
             )
@@ -305,7 +313,7 @@ function TrackOrder() {
                 className="btn btn-outline"
                 style={{display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', textDecoration: 'none'}}
               >
-                💬 WhatsApp Stylist
+                <WhatsAppIcon size={14} /> WhatsApp Stylist
               </a>
               <Link to="/catalogue" className="btn btn-primary" style={{fontSize: '0.85rem', textDecoration: 'none'}}>
                 Browse More Styles

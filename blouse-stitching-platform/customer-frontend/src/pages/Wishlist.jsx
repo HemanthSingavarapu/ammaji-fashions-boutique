@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { HeartIcon } from '../components/Icons';
 import api from '../services/api';
 
 function Wishlist() {
@@ -53,7 +54,7 @@ function Wishlist() {
 
   return (
     <div className="section container">
-      <h2 className="section-title">My <span>Wishlist</span> ❤️</h2>
+      <h2 className="section-title">My <span>Wishlist</span></h2>
       
       {loading ? (
         <div style={{textAlign: 'center', padding: '6rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem'}}>
@@ -63,7 +64,9 @@ function Wishlist() {
         </div>
       ) : wishlistDesigns.length === 0 ? (
         <div style={{textAlign: 'center', padding: '6rem 2rem', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-lg)', marginTop: '2rem'}}>
-          <div style={{fontSize: '4.5rem', marginBottom: '1.5rem', opacity: 0.9}}>🤍</div>
+          <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(0,0,0,0.04)', color: 'var(--text-muted)', marginBottom: '1.5rem'}}>
+            <HeartIcon size={36} color="var(--text-muted)" />
+          </div>
           <h3 style={{fontSize: '1.8rem', marginBottom: '1rem', fontFamily: 'var(--font-serif)'}}>Your wishlist is empty</h3>
           <p style={{color: 'var(--text-muted)', marginBottom: '2.5rem', fontSize: '1.1rem'}}>Looks like you haven't saved any designs yet. Explore our collection to find your next favorite blouse.</p>
           <Link to="/catalogue" className="btn btn-primary" style={{padding: '1rem 2.5rem'}}>Explore Catalogue</Link>
@@ -87,7 +90,7 @@ function Wishlist() {
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 title="Remove from Wishlist"
               >
-                ❤️
+                <HeartIcon size={18} fill="var(--primary-color)" color="var(--primary-color)" />
               </button>
               
               <Link to={`/design/${design.id}`} style={{textDecoration: 'none', color: 'inherit'}}>

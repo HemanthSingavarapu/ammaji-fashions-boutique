@@ -1,6 +1,16 @@
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
+import { 
+  ShoppingBagIcon, 
+  MapPinIcon, 
+  ReceiptIcon, 
+  DownloadIcon, 
+  WhatsAppIcon, 
+  RefreshIcon, 
+  AlertCircleIcon, 
+  InfoIcon 
+} from '../components/Icons';
 import api from '../services/api';
 
 function Profile() {
@@ -162,7 +172,9 @@ function Profile() {
             
             {orders.length === 0 ? (
               <div style={{textAlign: 'center', padding: '3rem 1rem'}}>
-                <div style={{fontSize: '3rem', marginBottom: '1rem'}}>🛍️</div>
+                <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(155, 35, 53, 0.08)', color: 'var(--primary-color)', marginBottom: '1rem'}}>
+                  <ShoppingBagIcon size={32} />
+                </div>
                 <h4 style={{fontSize: '1.2rem', marginBottom: '0.5rem'}}>No orders placed yet</h4>
                 <p style={{color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.95rem'}}>Choose a design from our collection or build a custom blouse in our studio.</p>
                 <Link to="/catalogue" className="btn btn-primary">Browse Catalogue</Link>
@@ -211,10 +223,10 @@ function Profile() {
                           <Link 
                             to="/track" 
                             className="btn btn-primary" 
-                            style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', textDecoration: 'none'}} 
+                            style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}} 
                             state={{orderNumber: order.orderNumber}}
                           >
-                            Track 📍
+                            Track <MapPinIcon size={13} />
                           </Link>
 
                           {(order.paymentStatus === 'SUCCESS' || order.paymentStatus === 'UNDER_REVIEW') && (
@@ -222,20 +234,20 @@ function Profile() {
                               <Link 
                                 to="/success" 
                                 className="btn btn-outline" 
-                                style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', textDecoration: 'none'}} 
+                                style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}} 
                                 state={{orderNumber: order.orderNumber}}
                               >
-                                Invoice 🧾
+                                Invoice <ReceiptIcon size={13} />
                               </Link>
                               <a 
                                 href={`http://localhost:8080/api/orders/${order.id}/invoice`} 
                                 target="_blank" 
                                 rel="noreferrer"
                                 className="btn btn-outline" 
-                                style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', textDecoration: 'none'}}
+                                style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}
                                 title="Download PDF Invoice"
                               >
-                                📥 PDF
+                                <DownloadIcon size={13} /> PDF
                               </a>
                             </>
                           )}
@@ -245,9 +257,9 @@ function Profile() {
                             target="_blank" 
                             rel="noreferrer"
                             className="btn btn-outline" 
-                            style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', textDecoration: 'none', color: '#16A34A', borderColor: '#16A34A'}}
+                            style={{padding: '0.45rem 0.9rem', fontSize: '0.85rem', textDecoration: 'none', color: '#16A34A', borderColor: '#16A34A', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}
                           >
-                            💬 WhatsApp Stylist
+                            <WhatsAppIcon size={14} /> WhatsApp Stylist
                           </a>
 
                           {canCancel && (
@@ -275,7 +287,7 @@ function Profile() {
                           }}>
                             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem'}}>
                               <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-                                <span style={{fontSize: '1.2rem'}}>🔄</span>
+                                <RefreshIcon size={18} color="#92400E" />
                                 <strong style={{color: '#92400E', fontSize: '0.95rem'}}>
                                   Refund Status: {order.refundStatus === 'REFUND_COMPLETED' ? 'Refund Completed' : 'Refund Processing'}
                                 </strong>
@@ -310,7 +322,7 @@ function Profile() {
                                 rel="noreferrer"
                                 style={{color: '#15803D', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}
                               >
-                                💬 Check Refund Status on WhatsApp →
+                                <WhatsAppIcon size={14} /> Check Refund Status on WhatsApp →
                               </a>
                             </div>
                           </div>
@@ -324,11 +336,11 @@ function Profile() {
                             borderRadius: '8px'
                           }}>
                             <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem'}}>
-                              <span style={{fontSize: '1rem'}}>🚫</span>
+                              <AlertCircleIcon size={16} color="#6B7280" />
                               <strong style={{color: '#4B5563', fontSize: '0.9rem'}}>Payment Cancelled</strong>
                             </div>
-                            <p style={{color: '#6B7280', fontSize: '0.88rem', margin: 0, lineHeight: 1.5}}>
-                              📌 <strong>Note:</strong> Payment was cancelled. If any amount was deducted, it will return in 3 days.
+                            <p style={{color: '#6B7280', fontSize: '0.88rem', margin: 0, lineHeight: 1.5, display: 'flex', alignItems: 'center', gap: '0.35rem'}}>
+                              <InfoIcon size={14} color="#6B7280" /> <span><strong>Note:</strong> Payment was cancelled. If any amount was deducted, it will return in 3 days.</span>
                             </p>
                           </div>
                         )
@@ -421,8 +433,8 @@ function Profile() {
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.25)',
             border: cancellationNotice.hasRefund ? '2px solid #FCD34D' : '2px solid var(--border-color)'
           }}>
-            <div style={{fontSize: '3rem', marginBottom: '1rem'}}>
-              {cancellationNotice.hasRefund ? '🔄' : '🚫'}
+            <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', background: cancellationNotice.hasRefund ? '#FEF3C7' : '#F3F4F6', color: cancellationNotice.hasRefund ? '#D97706' : '#6B7280', marginBottom: '1.25rem'}}>
+              {cancellationNotice.hasRefund ? <RefreshIcon size={36} color="#D97706" /> : <AlertCircleIcon size={36} color="#6B7280" />}
             </div>
             <h3 style={{fontSize: '1.5rem', marginBottom: '1rem', fontFamily: 'var(--font-serif)', color: 'var(--text-main)'}}>
               Order Cancelled
@@ -463,7 +475,7 @@ function Profile() {
                       textDecoration: 'none'
                     }}
                   >
-                    💬 Check Refund Status on WhatsApp
+                    <WhatsAppIcon size={18} color="#ffffff" /> Check Refund Status on WhatsApp
                   </a>
 
                   <button 
@@ -488,7 +500,7 @@ function Profile() {
                   <p style={{color: '#4B5563', fontSize: '0.95rem', lineHeight: '1.6', margin: 0}}>
                     Order #{cancellationNotice.orderNumber} has been cancelled.
                     <br /><br />
-                    📌 <strong>Note:</strong> Payment was not completed. If any amount was deducted, it will return in 3 days.
+                    <span style={{display: 'inline-flex', alignItems: 'center', gap: '0.35rem'}}><InfoIcon size={14} color="#6B7280" /> <strong>Note:</strong></span> Payment was not completed. If any amount was deducted, it will return in 3 days.
                   </p>
                 </div>
 

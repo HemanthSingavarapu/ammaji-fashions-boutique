@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { WhatsAppIcon, PhoneIcon } from './Icons';
 
 function Footer() {
   return (
@@ -29,7 +30,7 @@ function Footer() {
                   fontSize: '0.85rem'
                 }}
               >
-                <span>💬</span> WhatsApp Atelier Concierge
+                <WhatsAppIcon size={16} /> WhatsApp Atelier Concierge
               </a>
             </div>
           </div>
@@ -38,7 +39,7 @@ function Footer() {
             <ul className="footer-links">
               <li><Link to="/">Home</Link></li>
               <li><Link to="/catalogue">Design Catalogue</Link></li>
-              <li><Link to="/studio">Custom Blouse Studio 🧵</Link></li>
+              <li><Link to="/studio">Custom Blouse Studio</Link></li>
               <li><Link to="/guide">Measurement Guide</Link></li>
             </ul>
           </div>
@@ -46,8 +47,8 @@ function Footer() {
             <h4>Customer Care</h4>
             <ul className="footer-links">
               <li><Link to="/track">Track Order Status</Link></li>
-              <li><a href="https://wa.me/918341085629?text=Hi%20Ammaji%20Fashions!%20I%20need%20assistance%20with%20my%20order." target="_blank" rel="noopener noreferrer">💬 Chat on WhatsApp</a></li>
-              <li><a href="https://wa.me/918341085629?text=Hi%20Ammaji%20Fashions,%20I%20would%20like%20to%20request%20a%20call%20regarding%20blouse%20stitching." target="_blank" rel="noopener noreferrer">📞 Request Call Back</a></li>
+              <li><a href="https://wa.me/918341085629?text=Hi%20Ammaji%20Fashions!%20I%20need%20assistance%20with%20my%20order." target="_blank" rel="noopener noreferrer" style={{display: 'inline-flex', alignItems: 'center', gap: '0.4rem'}}><WhatsAppIcon size={14} /> Chat on WhatsApp</a></li>
+              <li><a href="https://wa.me/918341085629?text=Hi%20Ammaji%20Fashions,%20I%20would%20like%20to%20request%20a%20call%20regarding%20blouse%20stitching." target="_blank" rel="noopener noreferrer" style={{display: 'inline-flex', alignItems: 'center', gap: '0.4rem'}}><PhoneIcon size={14} /> Request Call Back</a></li>
             </ul>
           </div>
         </div>

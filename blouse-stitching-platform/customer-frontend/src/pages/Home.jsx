@@ -1,5 +1,16 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { 
+  ScissorsIcon, 
+  PhoneIcon, 
+  ShieldCheckIcon, 
+  TruckIcon, 
+  LockIcon, 
+  DressIcon, 
+  TapeMeasureIcon, 
+  SparklesIcon, 
+  WhatsAppIcon 
+} from '../components/Icons';
 
 function Home() {
   // Fabric Calculator State
@@ -46,18 +57,18 @@ function Home() {
     // Construct comprehensive WhatsApp message with all customer queries
     const ownerNumber = '918341085629';
     const message = 
-`🌸 *AMMAJI FASHIONS - VOICE CALL & DESIGN CONSULTATION* 🌸
+`*AMMAJI FASHIONS - VOICE CALL & DESIGN CONSULTATION*
 -----------------------------------------
-👤 *Customer Name:* ${consultData.name}
-📱 *Phone / WhatsApp:* ${consultData.phone}
+Customer Name: ${consultData.name}
+Phone / WhatsApp: ${consultData.phone}
 
-📌 *Inquiry Topic:* ${consultData.topic}
-⏱️ *Expected Stitching Time:* ${consultData.urgency}
+Inquiry Topic: ${consultData.topic}
+Expected Stitching Time: ${consultData.urgency}
 
-📅 *Preferred Day:* ${consultData.date}
-⏰ *Preferred Time Window:* ${consultData.slot}
+Preferred Day: ${consultData.date}
+Preferred Time Window: ${consultData.slot}
 
-💬 *Customer Query / Design Notes:*
+Customer Query / Design Notes:
 "${consultData.notes ? consultData.notes.trim() : 'Customer requested a voice call to discuss designs and stitching time.'}"
 -----------------------------------------
 _Sent via Ammaji Fashions Customer Portal_`;
@@ -165,7 +176,8 @@ _Sent via Ammaji Fashions Customer Portal_`;
                   fontWeight: 600
                 }}
               >
-                <span>🧵 Custom Blouse Studio</span>
+                <ScissorsIcon size={18} />
+                <span>Custom Blouse Studio</span>
               </Link>
             </div>
 
@@ -199,7 +211,7 @@ _Sent via Ammaji Fashions Customer Portal_`;
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              <span style={{fontSize: '1.05rem'}}>📞</span>
+              <PhoneIcon size={16} />
               <span>Questions on designs or stitching time? <strong style={{textDecoration: 'underline'}}>Book a Free Voice Call</strong> →</span>
             </div>
           </div>
@@ -210,28 +222,28 @@ _Sent via Ammaji Fashions Customer Portal_`;
       <section style={{background: 'var(--bg-surface-elevated)', borderTop: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)', padding: '1.75rem 0'}}>
         <div className="container" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', textAlign: 'center'}}>
           <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem'}}>
-            <span style={{fontSize: '2rem'}}>🪡</span>
+            <ScissorsIcon size={28} color="var(--primary-color)" />
             <div style={{textAlign: 'left'}}>
               <strong style={{display: 'block', fontSize: '0.95rem'}}>Master Artisans</strong>
               <span style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>30+ years crafting blouses</span>
             </div>
           </div>
           <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem'}}>
-            <span style={{fontSize: '2rem'}}>✨</span>
+            <ShieldCheckIcon size={28} color="var(--primary-color)" />
             <div style={{textAlign: 'left'}}>
               <strong style={{display: 'block', fontSize: '0.95rem'}}>100% Fit Guarantee</strong>
               <span style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>Free alterations if needed</span>
             </div>
           </div>
           <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem'}}>
-            <span style={{fontSize: '2rem'}}>🛵</span>
+            <TruckIcon size={28} color="var(--primary-color)" />
             <div style={{textAlign: 'left'}}>
               <strong style={{display: 'block', fontSize: '0.95rem'}}>Doorstep Valet Pickup</strong>
               <span style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>We collect your fabric</span>
             </div>
           </div>
           <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem'}}>
-            <span style={{fontSize: '2rem'}}>🔒</span>
+            <LockIcon size={28} color="var(--primary-color)" />
             <div style={{textAlign: 'left'}}>
               <strong style={{display: 'block', fontSize: '0.95rem'}}>Secure 50% Advance</strong>
               <span style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>Balance upon completion</span>
@@ -292,21 +304,27 @@ _Sent via Ammaji Fashions Customer Portal_`;
 
           <div className="grid-3" style={{gap: '2rem'}}>
             <div className="card" style={{padding: '2.5rem 1.5rem', textAlign: 'center'}}>
-              <div style={{fontSize: '3rem', marginBottom: '1rem'}}>👗</div>
+              <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(155, 35, 53, 0.08)', color: 'var(--primary-color)', marginBottom: '1.25rem'}}>
+                <DressIcon size={36} color="var(--primary-color)" />
+              </div>
               <h3 style={{fontSize: '1.25rem', marginBottom: '0.75rem'}}>1. Choose or Design</h3>
               <p style={{color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6}}>
                 Browse our curated gallery or customize your own neckline, back strings, and sleeves in our Custom Studio.
               </p>
             </div>
             <div className="card" style={{padding: '2.5rem 1.5rem', textAlign: 'center'}}>
-              <div style={{fontSize: '3rem', marginBottom: '1rem'}}>📏</div>
+              <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(155, 35, 53, 0.08)', color: 'var(--primary-color)', marginBottom: '1.25rem'}}>
+                <TapeMeasureIcon size={36} color="var(--primary-color)" />
+              </div>
               <h3 style={{fontSize: '1.25rem', marginBottom: '0.75rem'}}>2. Share Measurements</h3>
               <p style={{color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6}}>
                 Enter your measurements with our step-by-step guide or send an existing favorite sample blouse for reference.
               </p>
             </div>
             <div className="card" style={{padding: '2.5rem 1.5rem', textAlign: 'center'}}>
-              <div style={{fontSize: '3rem', marginBottom: '1rem'}}>✨</div>
+              <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(155, 35, 53, 0.08)', color: 'var(--primary-color)', marginBottom: '1.25rem'}}>
+                <TruckIcon size={36} color="var(--primary-color)" />
+              </div>
               <h3 style={{fontSize: '1.25rem', marginBottom: '0.75rem'}}>3. Doorstep Delivery</h3>
               <p style={{color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6}}>
                 Our master tailors handcraft your blouse with premium double lining and deliver the immaculate fit to your door.
@@ -384,7 +402,9 @@ _Sent via Ammaji Fashions Customer Portal_`;
         <div className="container" style={{maxWidth: '800px', textAlign: 'center'}}>
           <h2 className="section-title">Customer <span>Reviews</span></h2>
           <div className="card" style={{padding: '3.5rem 2rem', marginTop: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.04)'}}>
-            <div style={{fontSize: '3rem', marginBottom: '1rem'}}>⭐✨</div>
+            <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', color: '#D4AF37', marginBottom: '1.25rem'}}>
+              <SparklesIcon size={32} color="#D4AF37" />
+            </div>
             <h3 style={{fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--text-main)'}}>
               This feature is coming soon ..!!!
             </h3>
@@ -444,8 +464,9 @@ _Sent via Ammaji Fashions Customer Portal_`;
             <Link to="/catalogue" className="btn btn-secondary" style={{padding: '1rem 2.5rem', fontSize: '1.1rem'}}>
               Start Custom Order
             </Link>
-            <Link to="/studio" className="btn btn-outline" style={{padding: '1rem 2rem', color: 'white', borderColor: 'white', fontSize: '1.1rem'}}>
-              Open Custom Studio 🧵
+            <Link to="/studio" className="btn btn-outline" style={{padding: '1rem 2rem', color: 'white', borderColor: 'white', fontSize: '1.1rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem'}}>
+              <ScissorsIcon size={18} color="#ffffff" />
+              <span>Open Custom Studio</span>
             </Link>
           </div>
         </div>
@@ -457,7 +478,8 @@ _Sent via Ammaji Fashions Customer Portal_`;
           <div className="card" style={{width: '560px', maxWidth: '100%', margin: 'auto', padding: '2rem 2.25rem', maxHeight: '90vh', overflowY: 'auto'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem'}}>
               <h3 style={{margin: 0, fontFamily: 'var(--font-serif)', fontSize: '1.45rem', display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-                <span>📞</span> Book Free Voice Call
+                <PhoneIcon size={20} color="var(--primary-color)" />
+                <span>Book Free Voice Call</span>
               </h3>
               <button onClick={() => setShowConsultModal(false)} style={{background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-muted)'}}>✕</button>
             </div>
@@ -478,7 +500,8 @@ _Sent via Ammaji Fashions Customer Portal_`;
                     className="btn btn-primary"
                     style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#25D366', borderColor: '#25D366', color: '#FFF', padding: '0.85rem'}}
                   >
-                    <span>💬</span> Open WhatsApp Chat with Boutique
+                    <WhatsAppIcon size={18} color="#ffffff" />
+                    <span>Open WhatsApp Chat with Boutique</span>
                   </a>
                   <button 
                     onClick={() => {
@@ -614,7 +637,7 @@ _Sent via Ammaji Fashions Customer Portal_`;
                   className="btn btn-primary" 
                   style={{width: '100%', padding: '0.85rem', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'}}
                 >
-                  <span>📞</span> Confirm & Share with Owner on WhatsApp →
+                  <PhoneIcon size={18} /> Confirm & Share with Owner on WhatsApp →
                 </button>
               </form>
             )}

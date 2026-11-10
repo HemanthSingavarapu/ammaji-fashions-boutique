@@ -1,5 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeftIcon, 
+  TapeMeasureIcon, 
+  SewingIcon, 
+  SparklesIcon, 
+  PhoneIcon, 
+  ScissorsIcon, 
+  DressIcon, 
+  PackageIcon, 
+  ShieldCheckIcon 
+} from '../components/Icons';
 
 export default function MeasurementsGuide() {
   const [activeTab, setActiveTab] = useState('measure');
@@ -11,9 +22,9 @@ export default function MeasurementsGuide() {
         <button 
           onClick={() => navigate(-1)} 
           className="btn btn-outline" 
-          style={{padding: '0.45rem 1rem', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem'}}
+          style={{padding: '0.45rem 1rem', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer'}}
         >
-          ← Back
+          <ArrowLeftIcon size={16} /> Back
         </button>
       </div>
 
@@ -32,9 +43,9 @@ export default function MeasurementsGuide() {
       {/* Tab Navigation Buttons */}
       <div style={{display: 'flex', justifyContent: 'center', gap: '0.75rem', marginBottom: '2.5rem', flexWrap: 'wrap'}}>
         {[
-          { key: 'measure', label: '📏 How to Measure', icon: '📏' },
-          { key: 'fabric', label: '🧵 Fabric Requirements', icon: '🧵' },
-          { key: 'care', label: '🧼 Embroidery & Silk Care', icon: '🧼' }
+          { key: 'measure', label: 'How to Measure', icon: <TapeMeasureIcon size={16} /> },
+          { key: 'fabric', label: 'Fabric Requirements', icon: <SewingIcon size={16} /> },
+          { key: 'care', label: 'Embroidery & Silk Care', icon: <SparklesIcon size={16} /> }
         ].map(tab => (
           <button 
             key={tab.key}
@@ -49,10 +60,14 @@ export default function MeasurementsGuide() {
               fontSize: '0.95rem',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              boxShadow: activeTab === tab.key ? '0 4px 12px rgba(106, 27, 61, 0.25)' : 'none'
+              boxShadow: activeTab === tab.key ? '0 4px 12px rgba(106, 27, 61, 0.25)' : 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem'
             }}
           >
-            {tab.label}
+            {tab.icon}
+            <span>{tab.label}</span>
           </button>
         ))}
       </div>
@@ -60,8 +75,8 @@ export default function MeasurementsGuide() {
       {/* TAB 1: MEASUREMENTS */}
       {activeTab === 'measure' && (
         <div className="card" style={{padding: '3rem', border: '1px solid var(--border-color)'}}>
-          <div style={{background: '#FEF3C7', border: '1px solid #FDE68A', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', fontSize: '0.9rem', color: '#92400E'}}>
-            💡 <strong>Pro Tip:</strong> For best results, wear a well-fitting, non-padded bra while measuring, and keep the tape parallel to the floor without pulling it too tight.
+          <div style={{background: '#FEF3C7', border: '1px solid #FDE68A', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', fontSize: '0.9rem', color: '#92400E', display: 'flex', alignItems: 'center', gap: '0.4rem'}}>
+            <SparklesIcon size={16} color="#B45309" /> <span><strong>Pro Tip:</strong> For best results, wear a well-fitting, non-padded bra while measuring, and keep the tape parallel to the floor without pulling it too tight.</span>
           </div>
 
           {[
@@ -128,10 +143,10 @@ export default function MeasurementsGuide() {
                 className="btn btn-outline" 
                 style={{padding: '0.85rem 1.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem'}}
               >
-                <span>📞</span> Request Voice Call Consultation
+                <PhoneIcon size={16} /> Request Voice Call Consultation
               </a>
-              <Link to="/studio" className="btn btn-primary" style={{padding: '0.85rem 2.2rem'}}>
-                Configure in Custom Studio 🧵
+              <Link to="/studio" className="btn btn-primary" style={{padding: '0.85rem 2.2rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem'}}>
+                <ScissorsIcon size={16} /> Configure in Custom Studio
               </Link>
             </div>
           </div>
@@ -203,7 +218,9 @@ export default function MeasurementsGuide() {
 
           <div style={{display: 'flex', flexDirection: 'column', gap: '1.5rem'}}>
             <div style={{display: 'flex', gap: '1rem', alignItems: 'flex-start'}}>
-              <span style={{fontSize: '2rem'}}>👗</span>
+              <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(155, 35, 53, 0.08)', color: 'var(--primary-color)', flexShrink: 0}}>
+                <DressIcon size={24} color="var(--primary-color)" />
+              </div>
               <div>
                 <strong style={{fontSize: '1.05rem'}}>Always Dry Clean Only</strong>
                 <p style={{color: 'var(--text-muted)', fontSize: '0.9rem', margin: '0.2rem 0 0 0', lineHeight: 1.5}}>
@@ -213,7 +230,9 @@ export default function MeasurementsGuide() {
             </div>
 
             <div style={{display: 'flex', gap: '1rem', alignItems: 'flex-start'}}>
-              <span style={{fontSize: '2rem'}}>🧴</span>
+              <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(155, 35, 53, 0.08)', color: 'var(--primary-color)', flexShrink: 0}}>
+                <PackageIcon size={24} color="var(--primary-color)" />
+              </div>
               <div>
                 <strong style={{fontSize: '1.05rem'}}>Store in Breathable Muslin / Cotton Bags</strong>
                 <p style={{color: 'var(--text-muted)', fontSize: '0.9rem', margin: '0.2rem 0 0 0', lineHeight: 1.5}}>
@@ -223,7 +242,9 @@ export default function MeasurementsGuide() {
             </div>
 
             <div style={{display: 'flex', gap: '1rem', alignItems: 'flex-start'}}>
-              <span style={{fontSize: '2rem'}}>🔥</span>
+              <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(155, 35, 53, 0.08)', color: 'var(--primary-color)', flexShrink: 0}}>
+                <ShieldCheckIcon size={24} color="var(--primary-color)" />
+              </div>
               <div>
                 <strong style={{fontSize: '1.05rem'}}>Iron on Reverse with a Cloth Barrier</strong>
                 <p style={{color: 'var(--text-muted)', fontSize: '0.9rem', margin: '0.2rem 0 0 0', lineHeight: 1.5}}>

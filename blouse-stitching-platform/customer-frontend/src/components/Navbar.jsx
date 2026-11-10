@@ -1,6 +1,7 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { UserIcon, HeartIcon } from './Icons';
 import './Navbar.css';
 
 function Navbar() {
@@ -65,13 +66,13 @@ function Navbar() {
                 className="navbar-wishlist-btn" 
                 onClick={handleWishlistClick}
               >
-                <span className="heart-icon">♡</span>
+                <span className="heart-icon" style={{display: 'inline-flex', alignItems: 'center'}}><HeartIcon size={16} /></span>
                 <span>My Wishlist</span>
               </NavLink>
               {user ? (
                 <div style={{display: 'flex', gap: '0.5rem', width: '100%'}}>
-                  <NavLink to="/profile" className="navbar-user-pill" onClick={closeMobileMenu} style={{flex: 1, justifyContent: 'center'}}>
-                    👤 {user.name ? user.name.split(' ')[0] : 'Account'}
+                  <NavLink to="/profile" className="navbar-user-pill" onClick={closeMobileMenu} style={{flex: 1, justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: '0.4rem'}}>
+                    <UserIcon size={16} /> {user.name ? user.name.split(' ')[0] : 'Account'}
                   </NavLink>
                   <button onClick={handleLogout} className="navbar-logout-btn">
                     Logout
@@ -99,7 +100,7 @@ function Navbar() {
               onClick={handleWishlistClick} 
               title="Saved Designs"
             >
-              <span className="heart-icon">♡</span>
+              <span className="heart-icon" style={{display: 'inline-flex', alignItems: 'center'}}><HeartIcon size={16} /></span>
               <span className="wishlist-text">Wishlist</span>
             </NavLink>
 
@@ -107,7 +108,7 @@ function Navbar() {
             {user ? (
               <div className="navbar-auth-group">
                 <NavLink to="/profile" className="navbar-user-pill" onClick={closeMobileMenu}>
-                  <span className="user-avatar-icon">👤</span>
+                  <span className="user-avatar-icon" style={{display: 'inline-flex', alignItems: 'center'}}><UserIcon size={16} /></span>
                   <span className="user-name">{user.name ? user.name.split(' ')[0] : 'Account'}</span>
                 </NavLink>
                 <button onClick={handleLogout} className="navbar-logout-btn">
