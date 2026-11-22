@@ -53,6 +53,11 @@ function Navbar() {
                 </NavLink>
               </li>
               <li>
+                <NavLink to="/studio" className="nav-link" onClick={closeMobileMenu}>
+                  Custom Studio
+                </NavLink>
+              </li>
+              <li>
                 <NavLink to="/track" className="nav-link" onClick={closeMobileMenu}>
                   Track Order
                 </NavLink>
