@@ -51,6 +51,8 @@ function Checkout() {
     bust: '', waist: '', shoulder: '', blouseLength: '', 
     sleeveLength: '', armhole: '', frontNeck: '', backNeck: ''
   });
+  const [measurementType, setMeasurementType] = useState('CUSTOM'); // 'CUSTOM' or 'SAMPLE_BLOUSE'
+  const [sampleBlouseNotes, setSampleBlouseNotes] = useState('');
   
   useEffect(() => {
     if (user) {
@@ -188,6 +190,9 @@ function Checkout() {
     if (courierOption === 'BOUTIQUE') {
       finalInstructions = `PICKUP SLOT: ${pickupDay} - ${pickupSlot}\n` + finalInstructions;
     }
+    if (measurementType === 'SAMPLE_BLOUSE') {
+      finalInstructions = `[FITTING METHOD: SAMPLE BLOUSE ATTACHED]${sampleBlouseNotes ? ' Fit Notes: ' + sampleBlouseNotes : ''}\n` + finalInstructions;
+    }
 
     const cleanedMeasurement = {};
     if (measurement) {
@@ -209,6 +214,8 @@ function Checkout() {
       customDesignDetails: id === 'custom' ? design?.description : null,
       deliveryAddress: finalAddress,
       specialInstructions: finalInstructions,
+      measurementType: measurementType,
+      sampleBlouseNotes: sampleBlouseNotes,
       measurement: cleanedMeasurement,
       courierOption: courierOption,
       amount: finalPayableAmount,
@@ -374,19 +381,144 @@ function Checkout() {
             </div>
 
             {/* Measurements Section */}
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem'}}>
-              <h4 style={{fontFamily: 'var(--font-sans)', fontSize: '1.2rem', color: 'var(--primary-color)', margin: 0}}>Measurements (in inches)</h4>
-              <Link to="/guide" style={{color: 'var(--primary-color)', fontSize: '0.9rem', textDecoration: 'underline'}}>Need help measuring?</Link>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
+              <h4 style={{fontFamily: 'var(--font-sans)', fontSize: '1.25rem', color: 'var(--primary-color)', margin: 0}}>
+                Measurements & Fit Selection
+              </h4>
+              <Link to="/guide" style={{color: 'var(--primary-color)', fontSize: '0.9rem', textDecoration: 'underline'}}>
+                Need help measuring?
+              </Link>
             </div>
-            
-            <div className="grid-3" style={{gridTemplateColumns: '1fr 1fr', gap: '1.5rem'}}>
-              {Object.keys(measurement).map(key => (
-                <div className="form-group" key={key} style={{marginBottom: '0'}}>
-                  <label className="form-label" style={{textTransform: 'capitalize'}}>{key.replace(/([A-Z])/g, ' $1').trim()}</label>
-                  <input type="number" step="0.5" className="form-control" value={measurement[key]} onChange={e => setMeasurement({...measurement, [key]: e.target.value})} required />
+
+            {/* Feature 2: Measurement Option Switcher */}
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', marginBottom: '1.5rem'}}>
+              
+              {/* Option A: Enter Body Measurements */}
+              <div 
+                onClick={() => setMeasurementType('CUSTOM')}
+                style={{
+                  border: measurementType === 'CUSTOM' ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
+                  borderRadius: '10px',
+                  padding: '1.25rem',
+                  cursor: 'pointer',
+                  background: measurementType === 'CUSTOM' ? '#FDF4F6' : '#fff',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.85rem'
+                }}
+              >
+                <input 
+                  type="radio" 
+                  name="measurementType" 
+                  checked={measurementType === 'CUSTOM'} 
+                  onChange={() => setMeasurementType('CUSTOM')}
+                  style={{marginTop: '3px', accentColor: 'var(--primary-color)'}} 
+                />
+                <div>
+                  <strong style={{fontSize: '1rem', color: measurementType === 'CUSTOM' ? 'var(--primary-color)' : 'var(--text-main)'}}>
+                    1. Enter Body Measurements
+                  </strong>
+                  <p style={{fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0.3rem 0 0 0', lineHeight: 1.4}}>
+                    Provide your bust, waist, shoulder, and sleeve specs in inches using a measuring tape.
+                  </p>
                 </div>
-              ))}
+              </div>
+
+              {/* Option B: Send Sample Blouse */}
+              <div 
+                onClick={() => setMeasurementType('SAMPLE_BLOUSE')}
+                style={{
+                  border: measurementType === 'SAMPLE_BLOUSE' ? '2px solid #D97706' : '1px solid var(--border-color)',
+                  borderRadius: '10px',
+                  padding: '1.25rem',
+                  cursor: 'pointer',
+                  background: measurementType === 'SAMPLE_BLOUSE' ? '#FFFBEB' : '#fff',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.85rem'
+                }}
+              >
+                <input 
+                  type="radio" 
+                  name="measurementType" 
+                  checked={measurementType === 'SAMPLE_BLOUSE'} 
+                  onChange={() => setMeasurementType('SAMPLE_BLOUSE')}
+                  style={{marginTop: '3px', accentColor: '#D97706'}} 
+                />
+                <div>
+                  <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                    <strong style={{fontSize: '1rem', color: measurementType === 'SAMPLE_BLOUSE' ? '#B45309' : 'var(--text-main)'}}>
+                      2. Send Sample Blouse for Fit
+                    </strong>
+                    <span style={{fontSize: '0.7rem', background: '#F59E0B', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontWeight: 700}}>
+                      RECOMMENDED
+                    </span>
+                  </div>
+                  <p style={{fontSize: '0.82rem', color: '#78350F', margin: '0.3rem 0 0 0', lineHeight: 1.4}}>
+                    Pack your best-fitting blouse with your saree fabric. Our master tailor will clone your exact fit!
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {/* When Sample Blouse is chosen: Show Assurance Card & Optional notes */}
+            {measurementType === 'SAMPLE_BLOUSE' ? (
+              <div style={{
+                background: '#FFFDF5',
+                border: '1.5px solid #FCD34D',
+                borderRadius: '10px',
+                padding: '1.5rem',
+                marginBottom: '1.5rem'
+              }}>
+                <div style={{display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem', color: '#B45309'}}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                  </svg>
+                  <strong style={{fontSize: '1rem'}}>Sample Blouse Fit Guarantee:</strong>
+                </div>
+
+                <ul style={{fontSize: '0.88rem', color: '#78350F', margin: '0 0 1.25rem 1.25rem', lineHeight: 1.6, padding: 0}}>
+                  <li>Simply pack your favorite well-fitting blouse in the parcel alongside your saree fabric.</li>
+                  <li>Our master tailor will accurately replicate your chest, armhole, sleeve, and waist contours.</li>
+                  <li>We will measure and save your dimensions to your account for zero-effort future orders!</li>
+                  <li><strong>Zero risk:</strong> Your sample blouse will be safely returned to you inside the delivery parcel.</li>
+                </ul>
+
+                <div className="form-group" style={{marginBottom: '0'}}>
+                  <label className="form-label" style={{color: '#92400E', fontSize: '0.88rem'}}>
+                    Any tweaks or adjustments from your sample blouse? (Optional)
+                  </label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    placeholder="e.g., Keep chest fit exact as sample, but make sleeves 1 inch longer"
+                    value={sampleBlouseNotes}
+                    onChange={e => setSampleBlouseNotes(e.target.value)}
+                    style={{borderColor: '#FCD34D', background: '#FFFFFF'}}
+                  />
+                </div>
+              </div>
+            ) : (
+              /* When Custom Measurements are chosen: 8 input fields */
+              <div className="grid-3" style={{gridTemplateColumns: '1fr 1fr', gap: '1.5rem'}}>
+                {Object.keys(measurement).map(key => (
+                  <div className="form-group" key={key} style={{marginBottom: '0'}}>
+                    <label className="form-label" style={{textTransform: 'capitalize'}}>{key.replace(/([A-Z])/g, ' $1').trim()}</label>
+                    <input 
+                      type="number" 
+                      step="0.5" 
+                      className="form-control" 
+                      value={measurement[key]} 
+                      onChange={e => setMeasurement({...measurement, [key]: e.target.value})} 
+                      required={measurementType === 'CUSTOM'} 
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Courier Options */}
             <h4 style={{fontFamily: 'var(--font-sans)', fontSize: '1.2rem', color: 'var(--primary-color)', marginTop: '3rem', marginBottom: '1.5rem'}}>Courier Options</h4>

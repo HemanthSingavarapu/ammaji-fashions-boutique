@@ -264,6 +264,11 @@ function Profile() {
                                 <span> • Txn ID: <code style={{color: 'var(--primary-color)', fontWeight: 600}}>{order.transactionNumber}</code></span>
                               )}
                             </div>
+                            {(order.measurementType === 'SAMPLE_BLOUSE' || order.specialInstructions?.includes('SAMPLE BLOUSE')) && (
+                              <div style={{marginTop: '0.25rem', color: '#B45309', fontWeight: 600, fontSize: '0.8rem'}}>
+                                📦 Fit: Sample Blouse Provided by Customer
+                              </div>
+                            )}
                           </div>
                         </div>
                         

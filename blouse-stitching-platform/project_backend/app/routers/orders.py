@@ -52,6 +52,17 @@ def create_order(
         expected_paid = total_amount
         expected_balance = 0.0
 
+    m_type = request.measurementType or "CUSTOM"
+    s_notes = request.sampleBlouseNotes or ""
+
+    special_inst = request.specialInstructions or ""
+    if m_type == "SAMPLE_BLOUSE":
+        sample_tag = "[FITTING METHOD: SAMPLE BLOUSE SENT BY CUSTOMER]"
+        if s_notes:
+            sample_tag += f" Notes on sample: {s_notes}"
+        if sample_tag not in special_inst:
+            special_inst = f"{sample_tag}\n{special_inst}".strip()
+
     new_order = models.Order(
         orderNumber=order_number,
         userId=current_user.id,
@@ -67,7 +78,9 @@ def create_order(
         paymentStatus="PENDING",
         orderStatus="ORDER_PLACED",
         deliveryAddress=request.deliveryAddress,
-        specialInstructions=request.specialInstructions
+        specialInstructions=special_inst,
+        measurementType=m_type,
+        sampleBlouseNotes=s_notes
     )
     db.add(new_order)
     db.commit()

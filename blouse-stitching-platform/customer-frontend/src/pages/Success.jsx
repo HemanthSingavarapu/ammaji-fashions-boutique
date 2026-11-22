@@ -327,6 +327,25 @@ function Success() {
           </div>
         </div>
 
+        {/* Sample Blouse Dispatch Reminder */}
+        {(order.measurementType === 'SAMPLE_BLOUSE' || order.specialInstructions?.includes('SAMPLE BLOUSE')) && (
+          <div style={{
+            background: '#FFFBEB',
+            border: '1.5px solid #FCD34D',
+            borderRadius: '8px',
+            padding: '1rem 1.25rem',
+            marginBottom: '1.5rem',
+            color: '#92400E'
+          }}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, marginBottom: '0.35rem', color: '#B45309'}}>
+              <span>📦 Sample Blouse Packing Reminder</span>
+            </div>
+            <p style={{margin: 0, fontSize: '0.85rem', lineHeight: 1.5, color: '#78350F'}}>
+              You selected <strong>Sample Blouse Fit</strong>. Please remember to pack your best-fitting sample blouse alongside your saree fabric! Our master tailor will copy the exact fit and safely return your sample blouse inside your delivery parcel.
+            </p>
+          </div>
+        )}
+
         {/* Simple Note & Contact */}
         <div style={{
           background: '#F9FAFB', 

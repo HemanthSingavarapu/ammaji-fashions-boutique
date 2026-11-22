@@ -69,6 +69,8 @@ class Order(Base):
     orderStatus = Column("order_status", String(50), default="ORDER_PLACED")
     deliveryAddress = Column("delivery_address", Text, nullable=True)
     specialInstructions = Column("special_instructions", Text, nullable=True)
+    measurementType = Column("measurement_type", String(50), default="CUSTOM") # "CUSTOM" or "SAMPLE_BLOUSE"
+    sampleBlouseNotes = Column("sample_blouse_notes", Text, nullable=True)
     refundStatus = Column("refund_status", String(50), nullable=True)
     refundInitiatedAt = Column("refund_initiated_at", DateTime, nullable=True)
     createdAt = Column("created_at", DateTime, default=datetime.utcnow)

@@ -169,6 +169,8 @@ class OrderRequest(BaseModel):
     customDesignDetails: Optional[str] = None
     deliveryAddress: Optional[str] = None
     specialInstructions: Optional[str] = None
+    measurementType: Optional[str] = "CUSTOM"
+    sampleBlouseNotes: Optional[str] = None
     measurement: Optional[MeasurementSchema] = None
     courierOption: Optional[str] = None
     amount: Optional[float] = None
@@ -214,6 +216,8 @@ class OrderResponse(BaseModel):
     orderStatus: str
     deliveryAddress: Optional[str] = None
     specialInstructions: Optional[str] = None
+    measurementType: Optional[str] = "CUSTOM"
+    sampleBlouseNotes: Optional[str] = None
     refundStatus: Optional[str] = None
     refundInitiatedAt: Optional[datetime] = None
     createdAt: Optional[datetime] = None

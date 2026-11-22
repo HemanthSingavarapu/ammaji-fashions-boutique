@@ -238,8 +238,15 @@ def generate_job_card_pdf(order: models.Order) -> bytes:
     story.append(Spacer(1, 15))
 
     # Measurement Grid
-    story.append(Paragraph("<b>TAILORING MEASUREMENTS (INCHES):</b>", bold_style))
-    story.append(Spacer(1, 5))
+    if getattr(order, 'measurementType', 'CUSTOM') == "SAMPLE_BLOUSE":
+        sample_title = "<b>FITTING METHOD: 📦 SAMPLE BLOUSE SENT BY CUSTOMER</b><br/><font size=9 color='#666'>Master cutter: Copy exact chest, waist and armhole fit from customer's sample blouse.</font>"
+        if getattr(order, 'sampleBlouseNotes', None):
+            sample_title += f"<br/><font color='#8B0000'><b>Customer Fit Notes on Sample:</b> {order.sampleBlouseNotes}</font>"
+        story.append(Paragraph(sample_title, bold_style))
+        story.append(Spacer(1, 5))
+    else:
+        story.append(Paragraph("<b>TAILORING MEASUREMENTS (INCHES):</b>", bold_style))
+        story.append(Spacer(1, 5))
 
     m = order.measurement
     m_data = [

@@ -172,6 +172,12 @@ function TrackOrder() {
               </div>
             </div>
             <div>
+              <span style={{fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase'}}>Fitting Method</span>
+              <div style={{fontWeight: 600, fontSize: '0.95rem', marginTop: '0.2rem', color: (trackingData.measurementType === 'SAMPLE_BLOUSE' || trackingData.specialInstructions?.includes('SAMPLE BLOUSE')) ? '#B45309' : 'var(--text-main)'}}>
+                {(trackingData.measurementType === 'SAMPLE_BLOUSE' || trackingData.specialInstructions?.includes('SAMPLE BLOUSE')) ? '📦 Sample Blouse (Customer Sent)' : '📏 Custom Tape Measurements'}
+              </div>
+            </div>
+            <div>
               <span style={{fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase'}}>Assigned Atelier</span>
               <div style={{fontWeight: 600, fontSize: '1rem', marginTop: '0.2rem'}}>
                 Master Tailor Unit #2

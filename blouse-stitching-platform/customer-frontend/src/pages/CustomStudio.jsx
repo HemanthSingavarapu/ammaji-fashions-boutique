@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BlousePreview from '../components/BlousePreview';
 import { 
   ArrowLeftIcon, 
   HeartIcon, 
@@ -27,6 +28,10 @@ function CustomStudio() {
   const [padding, setPadding] = useState(true);
   const [lining, setLining] = useState('Double Pre-Washed Cotton');
   const [piping, setPiping] = useState('Gold Zari Contrast Piping');
+
+  // Interactive Visualizer state
+  const [previewView, setPreviewView] = useState('front');
+  const [previewColor, setPreviewColor] = useState('Bridal Crimson');
 
   const basePrice = 1200;
 
@@ -79,7 +84,7 @@ function CustomStudio() {
   const totalCalculated = basePrice + frontPrice + backPrice + sleevePrice + paddingPrice + pipingPrice;
 
   const handleProceedToOrder = () => {
-    const customSummary = `${frontNeck} front, ${backDesign} back, ${sleeveStyle}. Fabric: ${fabricType}. Lining: ${lining}${padding ? ', with padded cups' : ''}${piping ? ', with ' + piping : ''}.`;
+    const customSummary = `${frontNeck} front, ${backDesign} back, ${sleeveStyle}. Fabric: ${fabricType} (Color: ${previewColor}). Lining: ${lining}${padding ? ', with padded cups' : ''}${piping ? ', with ' + piping : ''}.`;
     
     navigate('/checkout/custom', {
       state: {
@@ -141,7 +146,10 @@ function CustomStudio() {
                 return (
                   <div 
                     key={opt.name}
-                    onClick={() => setFrontNeck(opt.name)}
+                    onClick={() => {
+                      setFrontNeck(opt.name);
+                      setPreviewView('front');
+                    }}
                     style={{
                       border: isSelected ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
                       borderRadius: 'var(--radius-md)',
@@ -195,7 +203,10 @@ function CustomStudio() {
                 return (
                   <div 
                     key={opt.name}
-                    onClick={() => setBackDesign(opt.name)}
+                    onClick={() => {
+                      setBackDesign(opt.name);
+                      setPreviewView('back');
+                    }}
                     style={{
                       border: isSelected ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
                       borderRadius: 'var(--radius-md)',
@@ -327,8 +338,23 @@ function CustomStudio() {
           </div>
         </div>
 
-        {/* Right: Live Quote & Order Sticky Summary */}
-        <div style={{flex: '1', minWidth: '320px', position: 'sticky', top: '100px'}}>
+        {/* Right: Live Interactive Visual Preview & Order Sticky Summary */}
+        <div style={{flex: '1', minWidth: '320px', position: 'sticky', top: '90px'}}>
+          
+          {/* Feature 4: Interactive 2D Blouse Visualizer */}
+          <BlousePreview
+            frontNeck={frontNeck}
+            backDesign={backDesign}
+            sleeveStyle={sleeveStyle}
+            fabricType={fabricType}
+            padding={padding}
+            piping={piping}
+            activeView={previewView}
+            onViewChange={setPreviewView}
+            selectedColor={previewColor}
+            onColorChange={setPreviewColor}
+          />
+
           <div className="card" style={{padding: '2.5rem', background: '#fff', boxShadow: 'var(--shadow-md)', border: '1px solid var(--border-color)'}}>
             <div style={{display: 'inline-block', background: 'var(--bg-surface-elevated)', color: 'var(--primary-color)', fontSize: '0.8rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '12px', marginBottom: '1rem'}}>
               BESPOKE QUOTE SUMMARY

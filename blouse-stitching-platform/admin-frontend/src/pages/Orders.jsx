@@ -269,11 +269,18 @@ function Orders() {
                     </td>
                     <td>
                       <div>{order.design?.name || order.customDesignName || 'Custom Blouse'}</div>
-                      {order.courierOption === 'BOUTIQUE' && (
-                        <span style={{fontSize: '0.75rem', background: '#F3E8FF', color: '#6B21A8', padding: '0.15rem 0.5rem', borderRadius: '4px', display: 'inline-block', marginTop: '0.2rem'}}>
-                          🛵 Boutique Pickup
-                        </span>
-                      )}
+                      <div style={{display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginTop: '0.2rem'}}>
+                        {order.courierOption === 'BOUTIQUE' && (
+                          <span style={{fontSize: '0.72rem', background: '#F3E8FF', color: '#6B21A8', padding: '0.15rem 0.45rem', borderRadius: '4px'}}>
+                            🛵 Pickup
+                          </span>
+                        )}
+                        {(order.measurementType === 'SAMPLE_BLOUSE' || order.specialInstructions?.includes('SAMPLE BLOUSE')) && (
+                          <span style={{fontSize: '0.72rem', background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A', padding: '0.15rem 0.45rem', borderRadius: '4px', fontWeight: 600}}>
+                            📦 Sample Blouse
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <strong style={{color: 'var(--text-main)'}}>₹{order.amount}</strong>
@@ -534,10 +541,24 @@ function Orders() {
               </div>
 
               <div style={{gridColumn: '1 / -1'}}>
-                <div style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>MEASUREMENTS PROVIDED</div>
-                <div style={{background: '#F9FAFB', padding: '0.75rem', borderRadius: '4px', fontSize: '0.85rem', whiteSpace: 'pre-wrap', fontFamily: 'monospace', marginTop: '0.35rem', border: '1px solid #E5E7EB'}}>
-                  {detailOrder.measurement || 'Standard Size'}
-                </div>
+                <div style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>FITTING & MEASUREMENTS</div>
+                {(detailOrder.measurementType === 'SAMPLE_BLOUSE' || detailOrder.specialInstructions?.includes('SAMPLE BLOUSE')) ? (
+                  <div style={{background: '#FFFBEB', padding: '0.85rem 1rem', borderRadius: '6px', fontSize: '0.9rem', color: '#B45309', border: '1px solid #FDE68A', marginTop: '0.35rem'}}>
+                    <strong>📦 Sample Blouse Provided by Customer</strong>
+                    {detailOrder.sampleBlouseNotes && (
+                      <div style={{marginTop: '0.35rem', color: '#78350F', fontSize: '0.85rem'}}>
+                        <strong>Customer Adjustment Notes:</strong> {detailOrder.sampleBlouseNotes}
+                      </div>
+                    )}
+                    <div style={{marginTop: '0.25rem', fontSize: '0.8rem', color: '#92400E', fontStyle: 'italic'}}>
+                      Master cutter should replicate fit from sample blouse and record dimensions.
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{background: '#F9FAFB', padding: '0.75rem', borderRadius: '4px', fontSize: '0.85rem', whiteSpace: 'pre-wrap', fontFamily: 'monospace', marginTop: '0.35rem', border: '1px solid #E5E7EB'}}>
+                    {detailOrder.measurement || 'Standard Size'}
+                  </div>
+                )}
               </div>
 
               <div style={{gridColumn: '1 / -1'}}>
