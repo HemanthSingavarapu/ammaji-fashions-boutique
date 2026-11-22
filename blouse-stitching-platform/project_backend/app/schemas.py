@@ -23,6 +23,8 @@ class UserResponse(UserBase):
 class AuthRequest(BaseModel):
     email: Optional[str] = None
     password: str
+    device_info: Optional[str] = None
+    force_logout: Optional[bool] = False
 
 class RegisterRequest(BaseModel):
     name: Optional[str] = None

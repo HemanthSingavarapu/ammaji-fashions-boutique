@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta
 from typing import Optional
 import bcrypt
@@ -31,7 +32,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire, "iat": datetime.utcnow()})
+    to_encode.update({
+        "exp": expire,
+        "iat": datetime.utcnow(),
+        "jti": uuid.uuid4().hex
+    })
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
@@ -83,6 +88,21 @@ def get_current_user(
             detail="User not found",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    # Validate active device session for customers
+    if user.role != "ADMIN":
+        session_record = db.query(models.UserSession).filter(models.UserSession.token == token).first()
+        user_has_sessions = db.query(models.UserSession).filter(models.UserSession.userId == user.id).first()
+        if user_has_sessions and not session_record:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Session logged out from another device. Please log in again.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        elif session_record:
+            session_record.lastActive = datetime.utcnow()
+            db.commit()
+
     return user
 
 def get_optional_current_user(
@@ -97,7 +117,20 @@ def get_optional_current_user(
         username: str = payload.get("sub")
         if not username:
             return None
-        return db.query(models.User).filter(models.User.email == username).first()
+        user = db.query(models.User).filter(models.User.email == username).first()
+        if not user:
+            return None
+
+        if user.role != "ADMIN":
+            session_record = db.query(models.UserSession).filter(models.UserSession.token == token).first()
+            user_has_sessions = db.query(models.UserSession).filter(models.UserSession.userId == user.id).first()
+            if user_has_sessions and not session_record:
+                return None
+            elif session_record:
+                session_record.lastActive = datetime.utcnow()
+                db.commit()
+
+        return user
     except Exception:
         return None
 

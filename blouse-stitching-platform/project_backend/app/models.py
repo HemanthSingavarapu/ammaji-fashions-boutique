@@ -19,7 +19,8 @@ class User(Base):
     createdAt = Column("created_at", DateTime, default=datetime.utcnow)
     updatedAt = Column("updated_at", DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    userMeasurement = relationship("UserMeasurement", back_populates="user", uselist=False)
+    userMeasurement = relationship("UserMeasurement", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    sessions = relationship("UserSession", back_populates="user", cascade="all, delete-orphan")
 
 class Category(Base):
     __tablename__ = "categories"
@@ -149,3 +150,15 @@ class OrderStatusHistory(Base):
     createdAt = Column("created_at", DateTime, default=datetime.utcnow)
 
     order = relationship("Order", back_populates="statusHistory")
+
+class UserSession(Base):
+    __tablename__ = "user_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    userId = Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    token = Column(String(500), unique=True, index=True, nullable=False)
+    deviceInfo = Column("device_info", String(255), nullable=True)
+    createdAt = Column("created_at", DateTime, default=datetime.utcnow)
+    lastActive = Column("last_active", DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="sessions")

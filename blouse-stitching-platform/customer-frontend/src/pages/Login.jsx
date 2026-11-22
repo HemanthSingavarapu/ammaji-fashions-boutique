@@ -3,6 +3,28 @@ import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 
+const getDeviceDescription = () => {
+  if (typeof navigator === 'undefined') return "Web Browser";
+  const ua = navigator.userAgent || "";
+  let browser = "Browser";
+  let os = "Device";
+
+  if (ua.indexOf("Firefox") > -1) browser = "Firefox";
+  else if (ua.indexOf("SamsungBrowser") > -1) browser = "Samsung Internet";
+  else if (ua.indexOf("Chrome") > -1) browser = "Chrome";
+  else if (ua.indexOf("Safari") > -1) browser = "Safari";
+  else if (ua.indexOf("Edge") > -1) browser = "Edge";
+
+  if (ua.indexOf("iPhone") > -1) os = "iPhone";
+  else if (ua.indexOf("iPad") > -1) os = "iPad";
+  else if (ua.indexOf("Android") > -1) os = "Android";
+  else if (ua.indexOf("Macintosh") > -1) os = "macOS";
+  else if (ua.indexOf("Windows") > -1) os = "Windows";
+  else if (ua.indexOf("Linux") > -1) os = "Linux";
+
+  return `${browser} on ${os}`;
+};
+
 function Login() {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -12,6 +34,10 @@ function Login() {
   const [formErrors, setFormErrors] = useState({});
   const [globalError, setGlobalError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const [sessionLimitExceeded, setSessionLimitExceeded] = useState(false);
+  const [activeDevices, setActiveDevices] = useState([]);
+  const [forceLoading, setForceLoading] = useState(false);
 
   const validateField = (name, value) => {
     switch (name) {
@@ -48,36 +74,51 @@ function Login() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e, forceLogout = false) => {
+    if (e && e.preventDefault) e.preventDefault();
     setGlobalError('');
     
     if (!validateAll()) return;
 
-    setLoading(true);
+    if (forceLogout) {
+      setForceLoading(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
-      // Actually authenticate with the backend (supports both email and mobile)
+      // Authenticate with backend, sending device info and optional force_logout flag
       const res = await api.post('/auth/login', {
         email: formData.email.trim(),
-        password: formData.password
+        password: formData.password,
+        device_info: getDeviceDescription(),
+        force_logout: forceLogout
       });
       
-      // Destructure token and user from the backend response
       const { token, user } = res.data;
+      setSessionLimitExceeded(false);
       
-      // Save to context and local storage
+      // Save to context and session storage
       login(token, user);
       
       navigate('/profile');
     } catch (err) {
-      const errorMsg = err.response?.data?.message || err.response?.data;
-      if (typeof errorMsg === 'string' && errorMsg.length > 0) {
-        setGlobalError(errorMsg);
+      const respData = err.response?.data;
+      if (err.response?.status === 403 && (respData?.code === 'SESSION_LIMIT_EXCEEDED' || respData?.detail === 'SESSION_LIMIT_EXCEEDED')) {
+        setSessionLimitExceeded(true);
+        setActiveDevices(respData.activeDevices || []);
+        setGlobalError('');
       } else {
-        setGlobalError('Invalid user or user details not found. Please register.');
+        const errorMsg = respData?.message || respData?.detail || respData;
+        if (typeof errorMsg === 'string' && errorMsg.length > 0) {
+          setGlobalError(errorMsg);
+        } else {
+          setGlobalError('Invalid user or user details not found. Please register.');
+        }
       }
     } finally {
       setLoading(false);
+      setForceLoading(false);
     }
   };
 
@@ -89,7 +130,7 @@ function Login() {
   const EyeIcon = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-      <circle cx="12" cy="12" r="3"></circle>
+      <circle cx="12" cy="13" r="3"></circle>
     </svg>
   );
 
@@ -104,9 +145,91 @@ function Login() {
     <div className="container section" style={{maxWidth: '500px'}}>
       <div className="card" style={{padding: '3rem'}}>
         <h2 className="section-title">Login</h2>
+        
+        {/* Active Session Limit Reached Alert & Prompt */}
+        {sessionLimitExceeded && (
+          <div style={{
+            backgroundColor: '#FFFBEB',
+            border: '1.5px solid #F59E0B',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            marginBottom: '1.75rem',
+            color: '#92400E'
+          }}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem'}}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <h3 style={{margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#B45309'}}>
+                Active Session Limit Reached
+              </h3>
+            </div>
+            
+            <p style={{margin: '0 0 1rem 0', fontSize: '0.88rem', lineHeight: 1.5, color: '#78350F'}}>
+              You are currently logged in on <strong>2 active devices</strong> (maximum allowed). Please log out from other devices to continue, or terminate other sessions below.
+            </p>
+
+            {activeDevices.length > 0 && (
+              <div style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                borderRadius: '8px',
+                padding: '0.75rem 1rem',
+                marginBottom: '1.25rem',
+                border: '1px solid #FDE68A'
+              }}>
+                <div style={{fontSize: '0.75rem', fontWeight: 700, color: '#92400E', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em'}}>
+                  Currently Active Devices:
+                </div>
+                {activeDevices.map((dev, idx) => (
+                  <div key={idx} style={{display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#451A03', padding: '0.2rem 0'}}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                      <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                    </svg>
+                    <strong>Device {idx + 1}:</strong> {dev.deviceInfo}
+                    {dev.lastActive && <span style={{fontSize: '0.75rem', color: '#B45309'}}>({dev.lastActive})</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={{display: 'flex', gap: '0.75rem', flexWrap: 'wrap'}}>
+              <button
+                type="button"
+                onClick={(e) => handleSubmit(e, true)}
+                className="btn btn-primary"
+                style={{
+                  flex: 1,
+                  backgroundColor: '#D97706',
+                  borderColor: '#D97706',
+                  padding: '0.75rem 1rem',
+                  fontSize: '0.88rem',
+                  fontWeight: 600
+                }}
+                disabled={forceLoading}
+              >
+                {forceLoading ? 'Logging out other devices...' : 'Log out other devices & Sign in here'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSessionLimitExceeded(false)}
+                className="btn btn-outline"
+                style={{
+                  padding: '0.75rem 1rem',
+                  fontSize: '0.88rem'
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
         {globalError && <div style={{backgroundColor: 'var(--error-color)', color: 'white', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem'}}>{globalError}</div>}
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e) => handleSubmit(e, false)}>
           <div className="form-group" style={{marginBottom: '1.5rem'}}>
             <label className="form-label">Email Address or Mobile Number</label>
             <input 

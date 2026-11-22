@@ -1,11 +1,22 @@
+from datetime import datetime, timedelta
+from typing import Optional
 from fastapi import APIRouter, Depends, status, Response
 from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from app.database import get_db
 from app import models, schemas
-from app.security import verify_password, get_password_hash, create_access_token, create_password_reset_token, verify_password_reset_token
+from app.security import (
+    security_scheme,
+    verify_password,
+    get_password_hash,
+    create_access_token,
+    create_password_reset_token,
+    verify_password_reset_token,
+    get_current_user
+)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -25,10 +36,95 @@ def login(request: schemas.AuthRequest, db: Session = Depends(get_db)):
     if not verify_password(request.password, user.password):
         return PlainTextResponse("Incorrect password. Please check your password.", status_code=status.HTTP_401_UNAUTHORIZED)
 
+    # Active session limit: maximum 2 active devices simultaneously
+    if user.role != "ADMIN":
+        # Clean up stale sessions older than 7 days
+        cutoff = datetime.utcnow() - timedelta(days=7)
+        db.query(models.UserSession).filter(
+            models.UserSession.userId == user.id,
+            models.UserSession.lastActive < cutoff
+        ).delete()
+        db.commit()
+
+        active_sessions = db.query(models.UserSession).filter(
+            models.UserSession.userId == user.id
+        ).order_by(models.UserSession.createdAt.asc()).all()
+
+        if len(active_sessions) >= 2:
+            if not request.force_logout:
+                return JSONResponse(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    content={
+                        "code": "SESSION_LIMIT_EXCEEDED",
+                        "message": "Active session limit reached (maximum 2 devices). Please log out from other devices to continue.",
+                        "activeDevices": [
+                            {
+                                "id": s.id,
+                                "deviceInfo": s.deviceInfo or "Device",
+                                "lastActive": s.lastActive.strftime("%d %b %Y, %I:%M %p") if s.lastActive else "Recently active"
+                            }
+                            for s in active_sessions
+                        ]
+                    }
+                )
+            else:
+                # User confirmed logout from other devices: clear prior sessions
+                db.query(models.UserSession).filter(models.UserSession.userId == user.id).delete()
+                db.commit()
+
     token = create_access_token(data={"sub": user.email, "role": user.role})
     
+    # Register this active device session
+    new_session = models.UserSession(
+        userId=user.id,
+        token=token,
+        deviceInfo=request.device_info or "Web Browser",
+        createdAt=datetime.utcnow(),
+        lastActive=datetime.utcnow()
+    )
+    db.add(new_session)
+    db.commit()
+
     user_data = schemas.UserResponse.model_validate(user)
     return {"token": token, "user": user_data}
+
+@router.post("/logout")
+def logout(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme),
+    db: Session = Depends(get_db)
+):
+    if credentials and credentials.credentials:
+        token = credentials.credentials
+        db.query(models.UserSession).filter(models.UserSession.token == token).delete()
+        db.commit()
+    return {"message": "Logged out successfully"}
+
+@router.post("/logout-all")
+def logout_all(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db.query(models.UserSession).filter(models.UserSession.userId == current_user.id).delete()
+    db.commit()
+    return {"message": "All devices logged out successfully"}
+
+@router.get("/active-sessions")
+def get_active_sessions(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    sessions = db.query(models.UserSession).filter(
+        models.UserSession.userId == current_user.id
+    ).order_by(models.UserSession.lastActive.desc()).all()
+    return [
+        {
+            "id": s.id,
+            "deviceInfo": s.deviceInfo or "Unknown Device",
+            "lastActive": s.lastActive.strftime("%d %b %Y, %I:%M %p") if s.lastActive else None,
+            "createdAt": s.createdAt.strftime("%d %b %Y, %I:%M %p") if s.createdAt else None
+        }
+        for s in sessions
+    ]
 
 @router.post("/register")
 def register(request: schemas.RegisterRequest, db: Session = Depends(get_db)):

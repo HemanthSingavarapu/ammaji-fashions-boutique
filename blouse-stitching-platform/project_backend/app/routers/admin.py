@@ -67,6 +67,23 @@ def get_all_users(
 ):
     return db.query(models.User).order_by(models.User.createdAt.desc()).all()
 
+@router.delete("/users/{id}")
+def delete_user(
+    id: int,
+    admin: models.User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    user = db.query(models.User).filter(models.User.id == id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.id == admin.id:
+        raise HTTPException(status_code=400, detail="Admin cannot delete their own account")
+    if user.role == "ADMIN":
+        raise HTTPException(status_code=400, detail="Cannot delete an admin account")
+    db.delete(user)
+    db.commit()
+    return Response(status_code=status.HTTP_200_OK)
+
 @router.put("/orders/{id}/status", response_model=schemas.OrderResponse)
 def update_order_status(
     id: int,
