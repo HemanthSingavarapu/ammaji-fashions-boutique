@@ -948,28 +948,9 @@ function Checkout() {
                     </select>
                   </div>
 
-                  <div style={{background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '0.85rem 1rem', fontSize: '0.85rem', color: '#334155'}}>
-                    <div style={{fontWeight: 700, color: 'var(--primary-color)', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem'}}>
-                      <BankIcon size={16} />
-                      <span>Direct NEFT / IMPS Boutique Account:</span>
-                    </div>
-                    <div style={{display: 'flex', flexDirection: 'column', gap: '0.3rem'}}>
-                      <div>Bank: <strong>Federal Bank</strong></div>
-                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                        <span>Account No: <strong>77770113307348</strong></span>
-                        <button type="button" onClick={() => handleCopy('77770113307348', 'A/C')} style={{border: 'none', background: 'transparent', color: 'var(--primary-color)', cursor: 'pointer', fontSize: '0.8rem', textDecoration: 'underline'}}>
-                          {copiedText === 'A/C' ? '✓ Copied' : 'Copy'}
-                        </button>
-                      </div>
-                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                        <span>IFSC: <strong>FDRL0007777</strong></span>
-                        <button type="button" onClick={() => handleCopy('FDRL0007777', 'IFSC')} style={{border: 'none', background: 'transparent', color: 'var(--primary-color)', cursor: 'pointer', fontSize: '0.8rem', textDecoration: 'underline'}}>
-                          {copiedText === 'IFSC' ? '✓ Copied' : 'Copy'}
-                        </button>
-                      </div>
-                      <div>Payee: <strong>Ammaji Fashions</strong></div>
-                    </div>
-                  </div>
+                  <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0}}>
+                    You will be securely redirected to your bank portal to authorize payment.
+                  </p>
                 </div>
               )}
             </div>
