@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
@@ -38,6 +38,17 @@ function Login() {
   const [sessionLimitExceeded, setSessionLimitExceeded] = useState(false);
   const [activeDevices, setActiveDevices] = useState([]);
   const [forceLoading, setForceLoading] = useState(false);
+  const [sessionTerminatedNotice, setSessionTerminatedNotice] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('reason') === 'session_terminated') {
+      const reason = sessionStorage.getItem('logout_reason') || 
+        'Your session has ended because another device logged in and terminated other sessions.';
+      setSessionTerminatedNotice(reason);
+      sessionStorage.removeItem('logout_reason');
+    }
+  }, []);
 
   const validateField = (name, value) => {
     switch (name) {
@@ -98,8 +109,8 @@ function Login() {
       const { token, user } = res.data;
       setSessionLimitExceeded(false);
       
-      // Save to context and session storage
-      login(token, user);
+      // Save to context and session storage, broadcasting force logout if triggered
+      login(token, user, forceLogout);
       
       navigate('/profile');
     } catch (err) {
@@ -145,6 +156,31 @@ function Login() {
     <div className="container section" style={{maxWidth: '500px'}}>
       <div className="card" style={{padding: '3rem'}}>
         <h2 className="section-title">Login</h2>
+
+        {/* Remote Session Ended / Terminated Notification */}
+        {sessionTerminatedNotice && (
+          <div style={{
+            backgroundColor: '#FEF2F2',
+            border: '1.5px solid #EF4444',
+            borderRadius: '8px',
+            padding: '1rem 1.25rem',
+            marginBottom: '1.5rem',
+            color: '#991B1B',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            fontSize: '0.88rem',
+            lineHeight: 1.4,
+            fontWeight: 500
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink: 0}}>
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <div>{sessionTerminatedNotice}</div>
+          </div>
+        )}
         
         {/* Active Session Limit Reached Alert & Prompt */}
         {sessionLimitExceeded && (

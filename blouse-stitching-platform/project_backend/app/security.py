@@ -92,16 +92,14 @@ def get_current_user(
     # Validate active device session for customers
     if user.role != "ADMIN":
         session_record = db.query(models.UserSession).filter(models.UserSession.token == token).first()
-        user_has_sessions = db.query(models.UserSession).filter(models.UserSession.userId == user.id).first()
-        if user_has_sessions and not session_record:
+        if not session_record:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Session logged out from another device. Please log in again.",
+                detail="Session expired or logged out from another device. Please log in again.",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        elif session_record:
-            session_record.lastActive = datetime.utcnow()
-            db.commit()
+        session_record.lastActive = datetime.utcnow()
+        db.commit()
 
     return user
 
@@ -123,12 +121,10 @@ def get_optional_current_user(
 
         if user.role != "ADMIN":
             session_record = db.query(models.UserSession).filter(models.UserSession.token == token).first()
-            user_has_sessions = db.query(models.UserSession).filter(models.UserSession.userId == user.id).first()
-            if user_has_sessions and not session_record:
+            if not session_record:
                 return None
-            elif session_record:
-                session_record.lastActive = datetime.utcnow()
-                db.commit()
+            session_record.lastActive = datetime.utcnow()
+            db.commit()
 
         return user
     except Exception:

@@ -46,12 +46,16 @@ def login(request: schemas.AuthRequest, db: Session = Depends(get_db)):
         ).delete()
         db.commit()
 
-        active_sessions = db.query(models.UserSession).filter(
-            models.UserSession.userId == user.id
-        ).order_by(models.UserSession.createdAt.asc()).all()
+        # If user explicitly selected "Log out other devices", wipe all their existing sessions
+        if request.force_logout:
+            db.query(models.UserSession).filter(models.UserSession.userId == user.id).delete()
+            db.commit()
+        else:
+            active_sessions = db.query(models.UserSession).filter(
+                models.UserSession.userId == user.id
+            ).order_by(models.UserSession.createdAt.asc()).all()
 
-        if len(active_sessions) >= 2:
-            if not request.force_logout:
+            if len(active_sessions) >= 2:
                 return JSONResponse(
                     status_code=status.HTTP_403_FORBIDDEN,
                     content={
@@ -67,10 +71,6 @@ def login(request: schemas.AuthRequest, db: Session = Depends(get_db)):
                         ]
                     }
                 )
-            else:
-                # User confirmed logout from other devices: clear prior sessions
-                db.query(models.UserSession).filter(models.UserSession.userId == user.id).delete()
-                db.commit()
 
     token = create_access_token(data={"sub": user.email, "role": user.role})
     
@@ -107,6 +107,38 @@ def logout_all(
     db.query(models.UserSession).filter(models.UserSession.userId == current_user.id).delete()
     db.commit()
     return {"message": "All devices logged out successfully"}
+
+@router.post("/logout-other-sessions")
+def logout_other_sessions(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme),
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Terminates all sessions for this user EXCEPT the current device.
+    """
+    current_token = credentials.credentials if credentials else None
+    if current_token:
+        db.query(models.UserSession).filter(
+            models.UserSession.userId == current_user.id,
+            models.UserSession.token != current_token
+        ).delete()
+    else:
+        db.query(models.UserSession).filter(
+            models.UserSession.userId == current_user.id
+        ).delete()
+    db.commit()
+    return {"message": "All other sessions logged out successfully"}
+
+@router.get("/validate-session")
+def validate_session(
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Heartbeat and active session validator.
+    Throws 401 if session token was invalidated or logged out by another device.
+    """
+    return {"valid": True, "user": schemas.UserResponse.model_validate(current_user)}
 
 @router.get("/active-sessions")
 def get_active_sessions(

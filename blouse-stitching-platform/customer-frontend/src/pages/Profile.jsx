@@ -25,6 +25,22 @@ function Profile() {
     bust: '', waist: '', shoulder: '', blouseLength: '', sleeveLength: '', armhole: '', frontNeck: '', backNeck: '', otherMeasurements: ''
   });
   const [measSaved, setMeasSaved] = useState(false);
+  const [loggingOutOthers, setLoggingOutOthers] = useState(false);
+  const [logoutOthersMsg, setLogoutOthersMsg] = useState('');
+
+  const handleLogoutOtherDevices = async () => {
+    setLoggingOutOthers(true);
+    setLogoutOthersMsg('');
+    try {
+      await api.post('/auth/logout-other-sessions');
+      setLogoutOthersMsg('All other devices have been logged out.');
+      setTimeout(() => setLogoutOthersMsg(''), 4000);
+    } catch (err) {
+      setError('Failed to log out other devices.');
+    } finally {
+      setLoggingOutOthers(false);
+    }
+  };
 
   const fetchOrders = () => {
     if(user) {
@@ -132,6 +148,38 @@ function Profile() {
             <p style={{margin: '0.75rem 0', color: 'var(--text-muted)'}}><strong style={{color: 'var(--text-main)'}}>Email:</strong> {user.email}</p>
             <p style={{margin: '0.75rem 0', color: 'var(--text-muted)'}}><strong style={{color: 'var(--text-main)'}}>Phone:</strong> {user.mobile || 'Not set'}</p>
             <p style={{margin: '0.75rem 0', color: 'var(--text-muted)'}}><strong style={{color: 'var(--text-main)'}}>Address:</strong> {user.address ? `${user.address}, ${user.city || ''}` : 'No address set'}</p>
+          </div>
+
+          {/* Active Devices & Security Card */}
+          <div className="card" style={{padding: '2.5rem', marginBottom: '2rem', border: '1px solid var(--border-color)'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1.25rem'}}>
+              <h3 style={{fontFamily: 'var(--font-sans)', margin: 0, fontSize: '1.25rem'}}>Device Security</h3>
+              <span style={{fontSize: '0.75rem', backgroundColor: '#EFF6FF', color: '#1E40AF', padding: '0.2rem 0.6rem', borderRadius: '4px', fontWeight: 600}}>Max 2 Active</span>
+            </div>
+            <p style={{fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '1.25rem', lineHeight: 1.5}}>
+              Your account is allowed up to 2 active devices simultaneously. You can instantly terminate all other device sessions here.
+            </p>
+            <button
+              type="button"
+              onClick={handleLogoutOtherDevices}
+              className="btn btn-outline"
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                fontSize: '0.88rem',
+                borderColor: '#DC2626',
+                color: '#DC2626',
+                fontWeight: 600
+              }}
+              disabled={loggingOutOthers}
+            >
+              {loggingOutOthers ? 'Logging out other devices...' : 'Log out from other devices'}
+            </button>
+            {logoutOthersMsg && (
+              <div style={{marginTop: '0.75rem', fontSize: '0.85rem', color: '#16A34A', textAlign: 'center', fontWeight: 600}}>
+                {logoutOthersMsg}
+              </div>
+            )}
           </div>
 
           <div className="card" style={{padding: '2.5rem', border: '1px solid var(--border-color)'}}>
