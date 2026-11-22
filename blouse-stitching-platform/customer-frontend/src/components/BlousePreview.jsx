@@ -499,14 +499,6 @@ function BlousePreview({
           {/* Front or Back Neck Cutout */}
           {currentView === 'front' ? renderFrontNeck() : renderBackDesign()}
 
-          {/* Padded cups subtle contour stitching (Front view only) */}
-          {currentView === 'front' && padding && (
-            <g opacity="0.35">
-              <ellipse cx="178" cy="180" rx="14" ry="16" fill="none" stroke="#FFFFFF" strokeDasharray="3 2" strokeWidth="1.5" />
-              <ellipse cx="222" cy="180" rx="14" ry="16" fill="none" stroke="#FFFFFF" strokeDasharray="3 2" strokeWidth="1.5" />
-            </g>
-          )}
-
           {/* Waist seam shaping lines */}
           <line x1="172" y1="185" x2="175" y2="230" stroke="rgba(0,0,0,0.15)" strokeWidth="1" strokeDasharray="2 2" />
           <line x1="228" y1="185" x2="225" y2="230" stroke="rgba(0,0,0,0.15)" strokeWidth="1" strokeDasharray="2 2" />
