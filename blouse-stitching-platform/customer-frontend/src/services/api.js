@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'https://ammaji-backend.onrender.com/api',
+  timeout: 15000,
 });
 
 // Request interceptor to add JWT token from sessionStorage
@@ -21,35 +22,53 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('user');
-      try {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      } catch (e) {}
+      const url = error.config?.url || '';
+      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register');
 
-      sessionStorage.setItem(
-        'logout_reason',
-        'You were logged out because you signed in from another device or terminated active sessions.'
-      );
+      // Do NOT trigger global session logout for failed login/register attempts
+      if (!isAuthEndpoint) {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        try {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        } catch (e) {}
 
-      // Notify in-memory context and cross-tab listeners
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('auth:logged_out', {
-            detail: error.response?.data?.detail || 'Session expired or logged out from another device.'
-          })
+        sessionStorage.setItem(
+          'logout_reason',
+          'You were logged out because you signed in from another device or terminated active sessions.'
         );
 
-        // Only redirect if not already on login or register page
-        const path = window.location.pathname;
-        if (path !== '/login' && path !== '/register') {
-          window.location.href = '/login?reason=session_terminated';
+        // Notify in-memory context and cross-tab listeners
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('auth:logged_out', {
+              detail: error.response?.data?.detail || 'Session expired or logged out from another device.'
+            })
+          );
+
+          // Only redirect if not already on login or register page
+          const path = window.location.pathname;
+          if (path !== '/login' && path !== '/register') {
+            window.location.href = '/login?reason=session_terminated';
+          }
         }
       }
     }
     return Promise.reject(error);
   }
 );
+
+// Prewarm / keep-alive helper for snappy server response
+export const prewarmBackend = () => {
+  try {
+    api.get('/ping', { timeout: 8000 }).catch(() => {});
+  } catch (e) {}
+};
+
+// Immediate background ping on module load so backend is awake before user submits
+if (typeof window !== 'undefined') {
+  setTimeout(prewarmBackend, 200);
+}
 
 export default api;

@@ -14,6 +14,7 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const validateField = (name, value) => {
     switch (name) {
@@ -100,8 +101,8 @@ function Register() {
       // Make API call directly
       await api.post('/auth/register', payload);
       
-      alert("Registration successful! Please login.");
-      navigate('/login');
+      setRegistrationSuccess(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       const errorMsg = err.response?.data?.message || err.response?.data || err.message;
       setGlobalError(typeof errorMsg === 'string' ? errorMsg : 'Registration failed. Please verify your details.');
@@ -128,6 +129,128 @@ function Register() {
       <line x1="1" y1="1" x2="23" y2="23"></line>
     </svg>
   );
+
+  if (registrationSuccess) {
+    return (
+      <div 
+        className="container section" 
+        style={{
+          minHeight: '75vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2.5rem 1rem'
+        }}
+      >
+        <div 
+          className="card" 
+          style={{
+            maxWidth: '540px',
+            width: '100%',
+            padding: '3rem 2.5rem',
+            textAlign: 'center',
+            borderRadius: '16px',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.08)'
+          }}
+        >
+          {/* Green Checkmark Badge */}
+          <div 
+            style={{
+              width: '84px',
+              height: '84px',
+              margin: '0 auto 1.5rem',
+              borderRadius: '50%',
+              backgroundColor: '#ECFDF5',
+              border: '2px solid #10B981',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#059669',
+              boxShadow: '0 6px 16px rgba(16, 185, 129, 0.25)'
+            }}
+          >
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+
+          <h2 
+            style={{
+              fontSize: '1.9rem',
+              fontFamily: 'var(--font-serif)',
+              color: 'var(--text-main)',
+              marginBottom: '0.75rem',
+              fontWeight: 700
+            }}
+          >
+            Registration Successful!
+          </h2>
+
+          <p 
+            style={{
+              fontSize: '0.98rem',
+              color: 'var(--text-muted)',
+              lineHeight: 1.6,
+              marginBottom: '1.75rem'
+            }}
+          >
+            Welcome to <strong>Ammaji Fashions</strong>, <strong>{formData.name || 'Valued Customer'}</strong>! Your account has been registered successfully. You can now log in with your credentials to explore custom styles, design blouses, and place orders.
+          </p>
+
+          {/* Account Summary Box */}
+          <div 
+            style={{
+              backgroundColor: 'var(--bg-surface-elevated, #F8FAFC)',
+              border: '1px solid var(--border-color, #E2E8F0)',
+              borderRadius: '10px',
+              padding: '1.1rem 1.25rem',
+              marginBottom: '2rem',
+              textAlign: 'left',
+              fontSize: '0.9rem'
+            }}
+          >
+            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem'}}>
+              <span style={{color: 'var(--text-muted)'}}>Registered Email:</span>
+              <strong style={{color: 'var(--text-main)'}}>{formData.email}</strong>
+            </div>
+            {formData.mobile && (
+              <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                <span style={{color: 'var(--text-muted)'}}>Mobile Number:</span>
+                <strong style={{color: 'var(--text-main)'}}>{formData.mobile}</strong>
+              </div>
+            )}
+          </div>
+
+          {/* Login Button */}
+          <button 
+            type="button" 
+            onClick={() => navigate('/login')} 
+            className="btn btn-primary"
+            style={{
+              width: '100%',
+              padding: '1rem',
+              fontSize: '1.05rem',
+              fontWeight: 600,
+              borderRadius: '8px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.6rem',
+              cursor: 'pointer'
+            }}
+          >
+            <span>Proceed to Login</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container section" style={{maxWidth: '800px'}}>

@@ -42,6 +42,11 @@ app.add_middleware(
 def home():
     return "Custom Blouse Designing and Stitching Platform API is running!"
 
+@app.get("/api/ping")
+@app.get("/ping")
+def ping():
+    return {"status": "ok", "service": "Ammaji Fashions API"}
+
 # Mount routers
 app.include_router(auth.router)
 app.include_router(catalogue.router)

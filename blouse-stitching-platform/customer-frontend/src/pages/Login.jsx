@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
+import api, { prewarmBackend } from '../services/api';
 
 const getDeviceDescription = () => {
   if (typeof navigator === 'undefined') return "Web Browser";
@@ -41,6 +41,7 @@ function Login() {
   const [sessionTerminatedNotice, setSessionTerminatedNotice] = useState('');
 
   useEffect(() => {
+    prewarmBackend();
     const params = new URLSearchParams(window.location.search);
     if (params.get('reason') === 'session_terminated') {
       const reason = sessionStorage.getItem('logout_reason') || 
@@ -120,9 +121,11 @@ function Login() {
         setActiveDevices(respData.activeDevices || []);
         setGlobalError('');
       } else {
-        const errorMsg = respData?.message || respData?.detail || respData;
-        if (typeof errorMsg === 'string' && errorMsg.length > 0) {
-          setGlobalError(errorMsg);
+        const errorMsg = respData?.message || respData?.detail || (typeof respData === 'string' ? respData : null);
+        if (typeof errorMsg === 'string' && errorMsg.trim().length > 0) {
+          setGlobalError(errorMsg.trim());
+        } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+          setGlobalError('Connection timed out while reaching the server. Please try again.');
         } else {
           setGlobalError('Invalid user or user details not found. Please register.');
         }
@@ -263,7 +266,46 @@ function Login() {
           </div>
         )}
 
-        {globalError && <div style={{backgroundColor: 'var(--error-color)', color: 'white', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem'}}>{globalError}</div>}
+        {globalError && (
+          <div style={{
+            backgroundColor: '#FEF2F2',
+            border: '1.5px solid #EF4444',
+            borderRadius: '8px',
+            padding: '1rem 1.25rem',
+            marginBottom: '1.5rem',
+            color: '#991B1B',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            fontSize: '0.9rem',
+            lineHeight: 1.4
+          }}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '0.6rem'}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink: 0}}>
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>{globalError}</span>
+            </div>
+            {globalError.toLowerCase().includes('register') && (
+              <Link 
+                to="/register" 
+                style={{
+                  color: '#DC2626', 
+                  fontWeight: 700, 
+                  textDecoration: 'underline',
+                  fontSize: '0.88rem',
+                  marginLeft: 'auto'
+                }}
+              >
+                Register Now →
+              </Link>
+            )}
+          </div>
+        )}
         
         <form onSubmit={(e) => handleSubmit(e, false)}>
           <div className="form-group" style={{marginBottom: '1.5rem'}}>

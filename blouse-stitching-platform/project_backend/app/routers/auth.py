@@ -23,12 +23,22 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 @router.post("/login")
 def login(request: schemas.AuthRequest, db: Session = Depends(get_db)):
     identifier = request.email.strip() if request.email else ""
+    if not identifier:
+        return PlainTextResponse("Invalid user or user details not found. Please register.", status_code=status.HTTP_401_UNAUTHORIZED)
+
+    clean_id = identifier.lower()
     
-    # Search by email (case-insensitive) or mobile
+    # Direct fast indexed lookup (B-Tree index on email or mobile)
     user = db.query(models.User).filter(
-        (func.lower(models.User.email) == identifier.lower()) |
+        (models.User.email == clean_id) |
         (models.User.mobile == identifier)
     ).first()
+
+    # Case-insensitive fallback if not found directly
+    if not user:
+        user = db.query(models.User).filter(
+            func.lower(models.User.email) == clean_id
+        ).first()
 
     if not user:
         return PlainTextResponse("Invalid user or user details not found. Please register.", status_code=status.HTTP_401_UNAUTHORIZED)
