@@ -69,6 +69,64 @@ function CustomStudio() {
     'Handloom Cotton / Linen'
   ];
 
+  const fabricSwatchList = [
+    {
+      id: 'Kanjeevaram / Banarasi Silk',
+      name: 'Banarasi & Kanjeevaram Silk',
+      tag: 'Bridal Brocade',
+      feel: 'Opulent woven gold zari buttas with metallic luster',
+      bestFor: 'Grand Weddings & Heavy Silk Sarees',
+      sheen: 'High Gold Sheen',
+      textureType: 'brocade',
+      baseHex: '#78350F',
+      accentHex: '#F59E0B'
+    },
+    {
+      id: 'Raw Silk / Chanderi',
+      name: 'Raw Silk & Chanderi',
+      tag: 'Crisp Slub Sheen',
+      feel: 'Natural organic slub grain with rich dual-tone satin sheen',
+      bestFor: 'Festive Ceremonies & Temple Drapes',
+      sheen: 'Textured Luster',
+      textureType: 'rawSilk',
+      baseHex: '#831843',
+      accentHex: '#F472B6'
+    },
+    {
+      id: 'Pure Organza / Tissue Silk',
+      name: 'Pure Organza & Tissue Silk',
+      tag: 'Airy Translucency',
+      feel: 'Gossamer translucent sheer weave with crystal shimmer',
+      bestFor: 'Modern Cocktails & Pastel Floral Sarees',
+      sheen: 'Prismatic Shimmer',
+      textureType: 'organza',
+      baseHex: '#312E81',
+      accentHex: '#818CF8'
+    },
+    {
+      id: 'Velvet with Zari Borders',
+      name: 'Royal Velvet with Zari',
+      tag: 'Plush Matte Depth',
+      feel: 'Ultra-soft deep light-absorbing pile with royal warmth',
+      bestFor: 'Winter Receptions & Grand Lehengas',
+      sheen: 'Deep Matte Pile',
+      textureType: 'velvet',
+      baseHex: '#18181B',
+      accentHex: '#FBBF24'
+    },
+    {
+      id: 'Handloom Cotton / Linen',
+      name: 'Handloom Cotton & Linen',
+      tag: 'Artisanal Weave',
+      feel: 'Pure breathable cross-woven yarns with structured crisp fall',
+      bestFor: 'Daily Office Elegance & Summer Comfort',
+      sheen: 'Natural Matte',
+      textureType: 'cotton',
+      baseHex: '#064E3B',
+      accentHex: '#34D399'
+    }
+  ];
+
   // Pricing calculation
   const getSelectedPrice = (list, selectedName) => {
     const item = list.find(o => o.name === selectedName);
@@ -305,17 +363,258 @@ function CustomStudio() {
               4. Saree Fabric Type & Finishing
             </h3>
 
-            <div style={{marginBottom: '1.5rem'}}>
-              <label style={{display: 'block', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem'}}>
-                Your Unstitched Fabric Type
-              </label>
-              <select 
-                value={fabricType} 
-                onChange={e => setFabricType(e.target.value)}
-                style={{width: '100%', padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '6px', fontSize: '0.95rem'}}
-              >
-                {fabricOptions.map(f => <option key={f} value={f}>{f}</option>)}
-              </select>
+            {/* Feature 2: Interactive Luxury Fabric Swatch Cards */}
+            <style>{`
+              @keyframes fabricCardShimmerSweep {
+                0% { transform: translateX(-150%) skewX(-20deg); }
+                100% { transform: translateX(250%) skewX(-20deg); }
+              }
+              .fabric-swatch-card {
+                transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+                cursor: pointer;
+              }
+              .fabric-swatch-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+              }
+              .fabric-swatch-card:hover .fabric-shimmer-sweep {
+                animation: fabricCardShimmerSweep 1.2s infinite ease-in-out;
+              }
+            `}</style>
+
+            <div style={{marginBottom: '2rem'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.75rem'}}>
+                <label style={{display: 'block', fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)'}}>
+                  ✨ Luxury Fabric Swatch Selector (Touch & Tactile Preview)
+                </label>
+                <span style={{fontSize: '0.8rem', color: 'var(--primary-color)', fontWeight: 600}}>
+                  Selected: {fabricType}
+                </span>
+              </div>
+              <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '-0.3rem', marginBottom: '1rem'}}>
+                Select the fabric of your unstitched saree or tailored material. High-res micro-texture and sheen are reflected live in the 2D visualizer.
+              </p>
+
+              <div style={{
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
+                gap: '1rem'
+              }}>
+                {fabricSwatchList.map((swatch) => {
+                  const isSelected = fabricType === swatch.id;
+
+                  return (
+                    <div 
+                      key={swatch.id}
+                      onClick={() => setFabricType(swatch.id)}
+                      className="fabric-swatch-card"
+                      style={{
+                        borderRadius: '12px',
+                        border: isSelected ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
+                        background: isSelected ? '#FFFDF8' : '#FFFFFF',
+                        boxShadow: isSelected ? '0 4px 16px rgba(155, 35, 53, 0.15)' : 'none',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}
+                    >
+                      {/* Micro-Texture Visual Swatch Box */}
+                      <div style={{
+                        height: '84px',
+                        position: 'relative',
+                        background: swatch.baseHex,
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        
+                        {/* High-Res Micro-Texture SVG Pattern */}
+                        {swatch.textureType === 'brocade' && (
+                          <svg width="100%" height="100%" style={{position: 'absolute', inset: 0}}>
+                            <defs>
+                              <pattern id={`brocade-${swatch.id}`} width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 10 2 Q 14 10 18 10 Q 14 10 10 18 Q 6 10 2 10 Q 6 10 10 2 Z" fill="none" stroke="#F59E0B" strokeWidth="0.8" />
+                                <circle cx="10" cy="10" r="1.5" fill="#FDE047" />
+                                <line x1="0" y1="0" x2="20" y2="20" stroke="rgba(245,158,11,0.2)" strokeWidth="0.5" />
+                                <line x1="20" y1="0" x2="0" y2="20" stroke="rgba(245,158,11,0.2)" strokeWidth="0.5" />
+                              </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill={`url(#brocade-${swatch.id})`} />
+                          </svg>
+                        )}
+
+                        {swatch.textureType === 'rawSilk' && (
+                          <svg width="100%" height="100%" style={{position: 'absolute', inset: 0}}>
+                            <defs>
+                              <pattern id={`rawsilk-${swatch.id}`} width="28" height="10" patternUnits="userSpaceOnUse">
+                                <line x1="0" y1="2" x2="16" y2="2" stroke="rgba(255,255,255,0.4)" strokeWidth="1" strokeDasharray="3 3" />
+                                <line x1="10" y1="6" x2="28" y2="6" stroke="rgba(255,255,255,0.3)" strokeWidth="1.2" strokeDasharray="4 2" />
+                                <line x1="0" y1="9" x2="28" y2="9" stroke="rgba(0,0,0,0.25)" strokeWidth="0.6" />
+                              </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill={`url(#rawsilk-${swatch.id})`} />
+                          </svg>
+                        )}
+
+                        {swatch.textureType === 'organza' && (
+                          <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35) 0%, rgba(199,210,254,0.2) 60%, transparent 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>
+                            <svg width="100%" height="100%" style={{position: 'absolute', inset: 0}}>
+                              <defs>
+                                <pattern id={`organza-${swatch.id}`} width="7" height="7" patternUnits="userSpaceOnUse">
+                                  <rect width="7" height="7" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="0.5" />
+                                  <circle cx="3.5" cy="3.5" r="0.6" fill="rgba(255,255,255,0.7)" />
+                                </pattern>
+                              </defs>
+                              <rect width="100%" height="100%" fill={`url(#organza-${swatch.id})`} />
+                            </svg>
+                          </div>
+                        )}
+
+                        {swatch.textureType === 'velvet' && (
+                          <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'radial-gradient(circle at 45% 40%, rgba(63,63,70,0.9) 0%, rgba(24,24,27,1) 75%)',
+                            boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8)'
+                          }}>
+                            <div style={{
+                              position: 'absolute',
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              height: '4px',
+                              background: 'linear-gradient(90deg, #D97706, #FBBF24, #D97706)'
+                            }} />
+                          </div>
+                        )}
+
+                        {swatch.textureType === 'cotton' && (
+                          <svg width="100%" height="100%" style={{position: 'absolute', inset: 0}}>
+                            <defs>
+                              <pattern id={`cotton-${swatch.id}`} width="6" height="6" patternUnits="userSpaceOnUse">
+                                <line x1="0" y1="3" x2="6" y2="3" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8" />
+                                <line x1="3" y1="0" x2="3" y2="6" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8" />
+                              </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill={`url(#cotton-${swatch.id})`} />
+                          </svg>
+                        )}
+
+                        {/* Animated Fabric Shimmer Sweep */}
+                        <div 
+                          className="fabric-shimmer-sweep"
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '50%',
+                            height: '100%',
+                            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                            pointerEvents: 'none',
+                            transform: 'translateX(-150%) skewX(-20deg)',
+                            animation: isSelected ? 'fabricCardShimmerSweep 2.8s infinite ease-in-out' : 'none'
+                          }}
+                        />
+
+                        {/* Top Overlay Badges */}
+                        <div style={{position: 'absolute', top: '8px', left: '8px'}}>
+                          <span style={{
+                            background: 'rgba(0,0,0,0.65)',
+                            backdropFilter: 'blur(4px)',
+                            color: '#FFFFFF',
+                            fontSize: '0.68rem',
+                            padding: '2px 8px',
+                            borderRadius: '10px',
+                            fontWeight: 600,
+                            letterSpacing: '0.3px'
+                          }}>
+                            {swatch.tag}
+                          </span>
+                        </div>
+
+                        <div style={{position: 'absolute', top: '8px', right: '8px'}}>
+                          <span style={{
+                            background: swatch.accentHex,
+                            color: swatch.textureType === 'organza' ? '#1E1B4B' : '#FFFFFF',
+                            fontSize: '0.65rem',
+                            padding: '2px 7px',
+                            borderRadius: '4px',
+                            fontWeight: 700
+                          }}>
+                            {swatch.sheen}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Card Content & Tactile Description */}
+                      <div style={{padding: '1rem', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between'}}>
+                        <div>
+                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem'}}>
+                            <h4 style={{margin: 0, fontSize: '0.98rem', fontFamily: 'var(--font-serif)', color: 'var(--text-main)'}}>
+                              {swatch.name}
+                            </h4>
+                            {isSelected && (
+                              <span style={{
+                                width: '18px',
+                                height: '18px',
+                                borderRadius: '50%',
+                                background: 'var(--primary-color)',
+                                color: '#FFFFFF',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '11px',
+                                fontWeight: 800
+                              }}>
+                                ✓
+                              </span>
+                            )}
+                          </div>
+
+                          <p style={{fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 0.5rem 0', lineHeight: 1.4}}>
+                            {swatch.feel}
+                          </p>
+                        </div>
+
+                        <div>
+                          <div style={{fontSize: '0.72rem', color: '#B45309', fontWeight: 600, background: '#FEF3C7', padding: '3px 8px', borderRadius: '4px', display: 'inline-block', marginBottom: '0.6rem'}}>
+                            Ideal for: {swatch.bestFor}
+                          </div>
+
+                          <div style={{
+                            paddingTop: '0.5rem', 
+                            borderTop: isSelected ? '1px solid #FDE68A' : '1px solid var(--border-color)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            fontSize: '0.78rem'
+                          }}>
+                            {isSelected ? (
+                              <span style={{color: 'var(--primary-color)', fontWeight: 700}}>
+                                ✓ Active in Visualizer
+                              </span>
+                            ) : (
+                              <span style={{color: 'var(--text-muted)'}}>
+                                Click to preview texture →
+                              </span>
+                            )}
+                            <span style={{fontSize: '0.72rem', color: '#9CA3AF'}}>Included</span>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem'}}>

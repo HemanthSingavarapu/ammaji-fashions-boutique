@@ -85,6 +85,20 @@ function TrackOrder() {
     { key: 'DELIVERED', label: 'Delivered to Doorstep', desc: 'Delivered to customer' }
   ];
 
+  const STATUS_RANKS = {
+    'ORDER_PLACED': 0,
+    'PAYMENT_CONFIRMED': 0,
+    'MATERIAL_AWAITING': 0.5,
+    'MATERIAL_RECEIVED': 1,
+    'DESIGNING_IN_PROGRESS': 2,
+    'STITCHING_IN_PROGRESS': 3,
+    'QUALITY_CHECK': 4,
+    'READY_FOR_DELIVERY': 5,
+    'SHIPPED': 6,
+    'OUT_FOR_DELIVERY': 6,
+    'DELIVERED': 7
+  };
+
   if (trackingData && trackingData.orderStatus === 'CANCELLED') {
     steps = [
       { key: 'CANCELLED', label: 'Payment Cancelled / Order Void', desc: 'This order was cancelled by user' }
@@ -243,64 +257,206 @@ function TrackOrder() {
             )
           )}
 
+          {/* Animated Stepper Styles */}
+          <style>{`
+            @keyframes pulseGlowRing {
+              0% {
+                box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.85);
+              }
+              70% {
+                box-shadow: 0 0 0 14px rgba(217, 119, 6, 0);
+              }
+              100% {
+                box-shadow: 0 0 0 0 rgba(217, 119, 6, 0);
+              }
+            }
+            @keyframes lineShimmerFlow {
+              0% { transform: translateY(-100%); }
+              100% { transform: translateY(100%); }
+            }
+            @keyframes activeTagPulse {
+              0%, 100% { opacity: 1; transform: scale(1); }
+              50% { opacity: 0.85; transform: scale(0.97); }
+            }
+          `}</style>
+
           {/* Timeline */}
-          <div style={{position: 'relative', paddingLeft: '2.5rem', borderLeft: '3px solid var(--border-color)', marginLeft: '1rem'}}>
+          <div style={{position: 'relative', paddingLeft: '3rem', marginLeft: '0.75rem'}}>
             
             {steps.map((step, index) => {
               const historyItem = getStepData(step.key);
-              const isCompleted = !!historyItem;
               const isLast = index === steps.length - 1;
-              
-              let iconContent = '';
-              let bgColor = '#E5E7EB';
-              let borderColor = '#D1D5DB';
-              
-              if (isCompleted) {
-                if (step.key === 'CANCELLED') {
-                   bgColor = 'var(--error-color)';
-                   iconContent = '✕';
-                } else {
-                   bgColor = 'var(--success-color)';
-                   borderColor = '#059669';
-                   iconContent = '✓';
-                }
-              }
+              const currentStatus = trackingData?.orderStatus || 'ORDER_PLACED';
+              const currentRank = STATUS_RANKS[currentStatus] !== undefined ? STATUS_RANKS[currentStatus] : 0;
+              const isCancelled = currentStatus === 'CANCELLED' || step.key === 'CANCELLED';
+
+              // Cumulative completion logic:
+              // When admin fast-forwards status (e.g. directly to Out for Delivery / Shipped or Delivered),
+              // all previous chronological stages are marked as completed with gold checkmarks.
+              const isCompleted = isCancelled ? false : (
+                currentStatus === 'DELIVERED' ||
+                index < currentRank ||
+                !!historyItem
+              );
+
+              // Active tailoring stage with pulse ring
+              const isActive = !isCancelled && currentStatus !== 'DELIVERED' && (
+                index === Math.floor(currentRank)
+              );
+
+              // Connector line status to the next stage
+              const isLineCompleted = !isCancelled && (
+                currentStatus === 'DELIVERED' ||
+                index < currentRank
+              );
+              const isLineToActive = !isCancelled && !isLineCompleted && (index === Math.floor(currentRank) - 1);
 
               return (
-                <div key={step.key} style={{position: 'relative', marginBottom: isLast ? '0' : '2rem'}}>
-                  {/* Step Bullet */}
-                  <div style={{
-                    position: 'absolute', 
-                    left: '-49px', 
-                    top: '0', 
-                    width: '28px', 
-                    height: '28px', 
-                    borderRadius: '50%', 
-                    backgroundColor: bgColor, 
-                    border: `2px solid ${borderColor}`,
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    alignItems: 'center', 
-                    color: 'white', 
-                    fontSize: '13px',
-                    fontWeight: 'bold',
-                    boxShadow: isCompleted ? '0 0 0 3px rgba(16, 185, 129, 0.2)' : 'none'
-                  }}>
-                    {iconContent}
-                  </div>
+                <div key={step.key} style={{position: 'relative', marginBottom: isLast ? '0' : '2.25rem'}}>
                   
-                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.5rem'}}>
-                    <h4 style={{margin: 0, fontFamily: 'var(--font-sans)', fontSize: '1.05rem', color: isCompleted ? 'var(--text-main)' : 'var(--text-muted)'}}>
-                      {step.label}
-                    </h4>
-                    {isCompleted && historyItem && (
-                      <span style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>
-                        {formatDate(historyItem.createdAt)}
+                  {/* Vertical Progress Connector Line */}
+                  {!isLast && (
+                    <div style={{
+                      position: 'absolute',
+                      left: '-33px',
+                      top: '32px',
+                      bottom: '-18px',
+                      width: '3px',
+                      background: isLineCompleted
+                        ? 'linear-gradient(180deg, #10B981, #059669)'
+                        : isLineToActive
+                          ? 'linear-gradient(180deg, #10B981 0%, #D97706 100%)'
+                          : '#E5E7EB',
+                      transition: 'background 0.4s ease',
+                      overflow: 'hidden',
+                      zIndex: 1
+                    }}>
+                      {isLineCompleted && (
+                        <div style={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: 'linear-gradient(180deg, transparent, rgba(255,255,255,0.7), transparent)',
+                          animation: 'lineShimmerFlow 2s infinite linear'
+                        }} />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Step Bullet */}
+                  {isCancelled ? (
+                    <div style={{
+                      position: 'absolute',
+                      left: '-48px',
+                      top: '0',
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'var(--error-color)',
+                      border: '2px solid #B91C1C',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      zIndex: 2
+                    }}>
+                      ✕
+                    </div>
+                  ) : isCompleted ? (
+                    <div style={{
+                      position: 'absolute',
+                      left: '-48px',
+                      top: '0',
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                      border: '2.5px solid #F59E0B',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      boxShadow: '0 2px 8px rgba(5, 150, 105, 0.35)',
+                      zIndex: 2
+                    }}>
+                      <span style={{color: '#FEF08A', fontSize: '15px', fontWeight: 900}}>✓</span>
+                    </div>
+                  ) : isActive ? (
+                    <div style={{
+                      position: 'absolute',
+                      left: '-48px',
+                      top: '0',
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #D97706 0%, #B45309 100%)',
+                      border: '2.5px solid #FEF3C7',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      animation: 'pulseGlowRing 1.8s infinite ease-out',
+                      zIndex: 2
+                    }}>
+                      <span style={{width: '10px', height: '10px', borderRadius: '50%', background: '#FFFFFF', boxShadow: '0 0 6px #FFFFFF'}}></span>
+                    </div>
+                  ) : (
+                    <div style={{
+                      position: 'absolute',
+                      left: '-46px',
+                      top: '2px',
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      background: '#F3F4F6',
+                      border: '2px solid #D1D5DB',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      zIndex: 2
+                    }}>
+                      <span style={{width: '6px', height: '6px', borderRadius: '50%', background: '#9CA3AF'}}></span>
+                    </div>
+                  )}
+                  
+                  {/* Step Label & Metadata */}
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem'}}>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap'}}>
+                      <h4 style={{
+                        margin: 0, 
+                        fontFamily: 'var(--font-sans)', 
+                        fontSize: '1.05rem', 
+                        fontWeight: isActive ? 700 : (isCompleted ? 600 : 500),
+                        color: isCompleted ? 'var(--text-main)' : (isActive ? '#92400E' : 'var(--text-muted)')
+                      }}>
+                        {step.label}
+                      </h4>
+                      {isActive && (
+                        <span style={{
+                          fontSize: '0.72rem',
+                          background: '#FEF3C7',
+                          color: '#92400E',
+                          border: '1px solid #FDE68A',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          animation: 'activeTagPulse 2s infinite ease-in-out'
+                        }}>
+                          <span style={{width: '6px', height: '6px', borderRadius: '50%', background: '#D97706', display: 'inline-block'}}></span>
+                          IN PROGRESS
+                        </span>
+                      )}
+                    </div>
+
+                    {isCompleted && (
+                      <span style={{fontSize: '0.8rem', color: historyItem ? 'var(--text-muted)' : '#059669', fontWeight: historyItem ? 500 : 600}}>
+                        {historyItem ? formatDate(historyItem.createdAt) : '✓ Atelier Completed'}
                       </span>
                     )}
                   </div>
 
-                  <p style={{fontSize: '0.85rem', color: isCompleted ? 'var(--text-muted)' : '#9CA3AF', margin: '0.2rem 0 0 0'}}>
+                  <p style={{fontSize: '0.85rem', color: isCompleted ? 'var(--text-muted)' : (isActive ? '#78350F' : '#9CA3AF'), margin: '0.25rem 0 0 0'}}>
                     {step.desc}
                   </p>
                   

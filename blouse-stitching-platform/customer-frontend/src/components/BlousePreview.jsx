@@ -365,6 +365,13 @@ function BlousePreview({
       </div>
 
       {/* SVG Canvas Area */}
+      <style>{`
+        @keyframes canvasShimmerSweep {
+          0% { transform: translateX(-150%) skewX(-20deg); }
+          50% { transform: translateX(260%) skewX(-20deg); }
+          100% { transform: translateX(260%) skewX(-20deg); }
+        }
+      `}</style>
       <div style={{
         background: '#FAF5F0',
         borderRadius: '12px',
@@ -391,7 +398,27 @@ function BlousePreview({
         </div>
 
         {/* Feature Pill Tags */}
-        <div style={{position: 'absolute', top: '10px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px'}}>
+        <div style={{position: 'absolute', top: '10px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 12}}>
+          {/* Active Fabric Texture Tag */}
+          <span style={{
+            fontSize: '0.72rem',
+            background: fabricType?.includes('Banarasi') ? 'linear-gradient(135deg, #FEF3C7, #FDE68A)' : 'rgba(255,255,255,0.95)',
+            border: fabricType?.includes('Banarasi') ? '1px solid #F59E0B' : '1px solid #E5E7EB',
+            color: fabricType?.includes('Banarasi') ? '#92400E' : '#374151',
+            padding: '2px 8px',
+            borderRadius: '10px',
+            fontWeight: 700,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}>
+            {fabricType?.includes('Banarasi') && '✨ '}
+            {fabricType?.includes('Raw Silk') && '🧵 '}
+            {fabricType?.includes('Organza') && '💎 '}
+            {fabricType?.includes('Velvet') && '👑 '}
+            {fabricType?.includes('Cotton') && '🌿 '}
+            {fabricType || 'Banarasi Silk'}
+          </span>
           <span style={{
             fontSize: '0.72rem',
             background: 'rgba(255,255,255,0.9)',
@@ -441,6 +468,21 @@ function BlousePreview({
           )}
         </div>
 
+        {/* Shimmer Light Sweep across Fabric Preview */}
+        <div 
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '45%',
+            height: '100%',
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent)',
+            pointerEvents: 'none',
+            animation: 'canvasShimmerSweep 4.5s infinite ease-in-out',
+            zIndex: 10
+          }}
+        />
+
         {/* Scalable Vector Artwork */}
         <svg
           viewBox="0 0 400 320"
@@ -454,11 +496,47 @@ function BlousePreview({
               <stop offset="100%" stopColor={color.darkHex} />
             </linearGradient>
 
+            {/* Velvet Matte Depth gradient */}
+            <radialGradient id="velvetMatteShading" cx="50%" cy="45%" r="55%">
+              <stop offset="0%" stopColor={color.hex} stopOpacity="0.9" />
+              <stop offset="65%" stopColor={color.darkHex} stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#0B0B0C" stopOpacity="1" />
+            </radialGradient>
+
             {/* Mannequin neck gradient */}
             <linearGradient id="skinShade" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#FDE2D2" />
               <stop offset="100%" stopColor="#F5CAB2" />
             </linearGradient>
+
+            {/* Micro-Texture Patterns */}
+            {/* 1. Banarasi Gold Zari Brocade Buttas */}
+            <pattern id="previewBrocade" width="22" height="22" patternUnits="userSpaceOnUse">
+              <path d="M 11 3 Q 15 11 18 11 Q 15 11 11 18 Q 7 11 4 11 Q 7 11 11 3 Z" fill="none" stroke="#F59E0B" strokeWidth="0.8" opacity="0.75" />
+              <circle cx="11" cy="11" r="1.5" fill="#FDE047" opacity="0.85" />
+              <line x1="0" y1="0" x2="22" y2="22" stroke="rgba(245, 158, 11, 0.2)" strokeWidth="0.5" />
+              <line x1="22" y1="0" x2="0" y2="22" stroke="rgba(245, 158, 11, 0.2)" strokeWidth="0.5" />
+            </pattern>
+
+            {/* 2. Raw Silk Slub Texture Grain */}
+            <pattern id="previewRawSilk" width="30" height="12" patternUnits="userSpaceOnUse">
+              <line x1="0" y1="2" x2="18" y2="2" stroke="rgba(255, 255, 255, 0.35)" strokeWidth="1" strokeDasharray="4 3" />
+              <line x1="12" y1="6" x2="30" y2="6" stroke="rgba(255, 255, 255, 0.25)" strokeWidth="1.2" strokeDasharray="5 2" />
+              <line x1="0" y1="10" x2="30" y2="10" stroke="rgba(0, 0, 0, 0.18)" strokeWidth="0.6" />
+              <line x1="8" y1="0" x2="8" y2="12" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="0.6" />
+            </pattern>
+
+            {/* 3. Pure Organza Sheer Grid */}
+            <pattern id="previewOrganza" width="8" height="8" patternUnits="userSpaceOnUse">
+              <rect width="8" height="8" fill="none" stroke="rgba(255, 255, 255, 0.3)" strokeWidth="0.5" />
+              <circle cx="4" cy="4" r="0.8" fill="rgba(255, 255, 255, 0.6)" />
+            </pattern>
+
+            {/* 4. Handloom Cotton Weave */}
+            <pattern id="previewCotton" width="6" height="6" patternUnits="userSpaceOnUse">
+              <line x1="0" y1="3" x2="6" y2="3" stroke="rgba(255, 255, 255, 0.22)" strokeWidth="0.8" />
+              <line x1="3" y1="0" x2="3" y2="6" stroke="rgba(255, 255, 255, 0.22)" strokeWidth="0.8" />
+            </pattern>
           </defs>
 
           {/* Mannequin neck and upper torso base */}
@@ -483,10 +561,41 @@ function BlousePreview({
           {/* Main Blouse Torso Body */}
           <path
             d="M 135 115 L 152 140 L 158 230 Q 200 238 242 230 L 248 140 L 265 115 Z"
-            fill="url(#fabricShading)"
+            fill={fabricType?.includes('Velvet') ? "url(#velvetMatteShading)" : "url(#fabricShading)"}
             stroke={color.darkHex}
             strokeWidth="1.5"
+            opacity={fabricType?.includes('Organza') ? 0.88 : 1}
           />
+
+          {/* Fabric Micro-Texture Overlay on Torso */}
+          {fabricType?.includes('Banarasi') && (
+            <path
+              d="M 135 115 L 152 140 L 158 230 Q 200 238 242 230 L 248 140 L 265 115 Z"
+              fill="url(#previewBrocade)"
+              pointerEvents="none"
+            />
+          )}
+          {fabricType?.includes('Raw Silk') && (
+            <path
+              d="M 135 115 L 152 140 L 158 230 Q 200 238 242 230 L 248 140 L 265 115 Z"
+              fill="url(#previewRawSilk)"
+              pointerEvents="none"
+            />
+          )}
+          {fabricType?.includes('Organza') && (
+            <path
+              d="M 135 115 L 152 140 L 158 230 Q 200 238 242 230 L 248 140 L 265 115 Z"
+              fill="url(#previewOrganza)"
+              pointerEvents="none"
+            />
+          )}
+          {fabricType?.includes('Cotton') && (
+            <path
+              d="M 135 115 L 152 140 L 158 230 Q 200 238 242 230 L 248 140 L 265 115 Z"
+              fill="url(#previewCotton)"
+              pointerEvents="none"
+            />
+          )}
 
           {/* Gold Bottom Hem Border */}
           <path
