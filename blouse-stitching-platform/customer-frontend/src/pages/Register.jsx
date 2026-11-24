@@ -104,8 +104,18 @@ function Register() {
       setRegistrationSuccess(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      const errorMsg = err.response?.data?.message || err.response?.data || err.message;
-      setGlobalError(typeof errorMsg === 'string' ? errorMsg : 'Registration failed. Please verify your details.');
+      const errorMsg = err.response?.data?.detail || err.response?.data?.message || err.response?.data || err.message;
+      const cleanMsg = typeof errorMsg === 'string' ? errorMsg : 'Registration failed. Please verify your details.';
+      setGlobalError(cleanMsg);
+
+      const lower = cleanMsg.toLowerCase();
+      if (lower.includes('email') && (lower.includes('registered') || lower.includes('exist'))) {
+        setFormErrors(prev => ({ ...prev, email: 'User already registered with this email. Please log in.' }));
+      }
+      if (lower.includes('mobile') && (lower.includes('registered') || lower.includes('exist'))) {
+        setFormErrors(prev => ({ ...prev, mobile: 'User already registered with this mobile number. Please log in.' }));
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
     }
@@ -257,20 +267,62 @@ function Register() {
       <div className="card" style={{padding: '3rem'}}>
         <h2 className="section-title">Create an Account</h2>
         {globalError && (
-          <div style={{backgroundColor: 'var(--error-color)', color: 'white', padding: '1rem 1.25rem', borderRadius: '6px', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem'}}>
-            <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-              </svg>
-              <span>{globalError}</span>
+          <div style={{
+            backgroundColor: '#FEF2F2',
+            border: '1.5px solid #F87171',
+            borderRadius: '10px',
+            padding: '1.25rem 1.5rem',
+            marginBottom: '1.75rem',
+            boxShadow: '0 4px 14px rgba(220, 38, 38, 0.08)'
+          }}>
+            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem'}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  backgroundColor: '#FEE2E2',
+                  color: '#DC2626',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  fontSize: '1.1rem',
+                  flexShrink: 0
+                }}>
+                  !
+                </div>
+                <div>
+                  <h4 style={{margin: '0 0 0.2rem 0', color: '#991B1B', fontSize: '1.02rem', fontWeight: 700}}>
+                    Account Notice
+                  </h4>
+                  <p style={{margin: 0, color: '#B91C1C', fontSize: '0.92rem', fontWeight: 500}}>
+                    {globalError}
+                  </p>
+                </div>
+              </div>
+
+              {(globalError.toLowerCase().includes('login') || globalError.toLowerCase().includes('log in') || globalError.toLowerCase().includes('registered') || globalError.toLowerCase().includes('already')) && (
+                <Link 
+                  to="/login" 
+                  className="btn btn-primary"
+                  style={{
+                    padding: '0.65rem 1.4rem',
+                    fontSize: '0.92rem',
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    borderRadius: '6px',
+                    boxShadow: '0 2px 6px rgba(155, 35, 53, 0.25)',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Go to Login →
+                </Link>
+              )}
             </div>
-            {globalError.toLowerCase().includes('login') && (
-              <Link to="/login" style={{color: '#fff', textDecoration: 'underline', fontWeight: 'bold', fontSize: '0.9rem'}}>
-                Go to Login →
-              </Link>
-            )}
           </div>
         )}
         

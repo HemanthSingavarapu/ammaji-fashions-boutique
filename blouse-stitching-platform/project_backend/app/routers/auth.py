@@ -184,11 +184,31 @@ def register(request: schemas.RegisterRequest, db: Session = Depends(get_db)):
     email = request.email.strip().lower() if request.email else ""
     mobile = request.mobile.strip() if request.mobile else ""
 
-    if db.query(models.User).filter(func.lower(models.User.email) == email).first():
-        return PlainTextResponse("User already exists with this email. Please login.", status_code=status.HTTP_400_BAD_REQUEST)
+    # Check if a user already exists with this email or mobile number in the database
+    existing_by_email = db.query(models.User).filter(func.lower(models.User.email) == email).first() if email else None
+    existing_by_mobile = db.query(models.User).filter(models.User.mobile == mobile).first() if mobile else None
 
-    if mobile and db.query(models.User).filter(models.User.mobile == mobile).first():
-        return PlainTextResponse("User already exists with this mobile number. Please login.", status_code=status.HTTP_400_BAD_REQUEST)
+    # Also verify against the persistent registry file
+    if not existing_by_email or not existing_by_mobile:
+        try:
+            from app.persistent_store import load_registry_data
+            reg_data = load_registry_data()
+            for r in reg_data:
+                r_email = (r.get("email") or "").strip().lower()
+                r_mobile = (r.get("mobile") or "").strip()
+                if email and r_email == email and not existing_by_email:
+                    existing_by_email = True
+                if mobile and r_mobile == mobile and not existing_by_mobile:
+                    existing_by_mobile = True
+        except Exception:
+            pass
+
+    if existing_by_email and existing_by_mobile:
+        return PlainTextResponse("User already registered with this email and mobile number. Please log in.", status_code=status.HTTP_400_BAD_REQUEST)
+    elif existing_by_email:
+        return PlainTextResponse("User already registered with this email. Please log in.", status_code=status.HTTP_400_BAD_REQUEST)
+    elif existing_by_mobile:
+        return PlainTextResponse("User already registered with this mobile number. Please log in.", status_code=status.HTTP_400_BAD_REQUEST)
 
     new_user = models.User(
         name=request.name.strip() if request.name else "",
