@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import Base
 from app import models
 from app.security import get_password_hash
+from app.persistent_store import sync_persistent_users
 
 def auto_migrate(engine):
     """
@@ -25,6 +26,12 @@ def auto_migrate(engine):
         print(f"Auto-migrate note: {e}")
 
 def seed_database(db: Session):
+    # Ensure all persistent and historical users are restored & synchronized
+    try:
+        sync_persistent_users(db)
+    except Exception as e:
+        print(f"Persistent user sync notice: {e}")
+
     # Ensure default admin account exists
     admin = db.query(models.User).filter(models.User.email == "admin@blouse.com").first()
     if not admin:

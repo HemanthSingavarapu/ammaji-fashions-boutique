@@ -65,6 +65,11 @@ def get_all_users(
     admin: models.User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
+    try:
+        from app.persistent_store import sync_persistent_users
+        sync_persistent_users(db)
+    except Exception:
+        pass
     return db.query(models.User).order_by(models.User.createdAt.desc()).all()
 
 @router.delete("/users/{id}")

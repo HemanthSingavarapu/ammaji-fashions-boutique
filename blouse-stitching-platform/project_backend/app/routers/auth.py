@@ -8,6 +8,7 @@ from sqlalchemy import func
 
 from app.database import get_db
 from app import models, schemas
+from app.persistent_store import save_user_to_registry
 from app.security import (
     security_scheme,
     verify_password,
@@ -45,6 +46,16 @@ def login(request: schemas.AuthRequest, db: Session = Depends(get_db)):
 
     if not verify_password(request.password, user.password):
         return PlainTextResponse("Incorrect password. Please check your password.", status_code=status.HTTP_401_UNAUTHORIZED)
+
+    # If login succeeded via fallback, synchronize and persist user password hash
+    try:
+        import bcrypt
+        if not bcrypt.checkpw(request.password.encode('utf-8'), user.password.encode('utf-8')):
+            user.password = get_password_hash(request.password)
+            db.commit()
+            save_user_to_registry(user, password_hash=user.password)
+    except Exception:
+        pass
 
     # Active session limit: maximum 2 active devices simultaneously
     if user.role != "ADMIN":
@@ -193,6 +204,12 @@ def register(request: schemas.RegisterRequest, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    # Persist newly registered user into the permanent registry
+    try:
+        save_user_to_registry(new_user, password_hash=new_user.password)
+    except Exception as e:
+        print(f"Registry persist note: {e}")
 
     return PlainTextResponse("User registered successfully", status_code=status.HTTP_200_OK)
 

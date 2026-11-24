@@ -1,0 +1,73 @@
+[
+  {
+    "name": "Hemanth Singavarapu",
+    "email": "hemanthsingavarapu1428@gmail.com",
+    "mobile": "9966282523",
+    "password": "$2b$12$j9jI3FPSYRDudA5uJneLwe0Y6FwD2Jdkv6WsDpak4mb5EEOCtibZS",
+    "role": "USER",
+    "address": "49-38-23",
+    "city": "VISAKHAPATNAM",
+    "state": "Andhra Pradesh",
+    "pincode": "530016",
+    "createdAt": "2026-11-24T16:32:53.114556"
+  },
+  {
+    "name": "hemanth kumar",
+    "email": "hemanth@gmail.com",
+    "mobile": "9966282523",
+    "password": "$2b$12$2PuB3H7iqBbFhNM.SolPV.I79w5eHn/XmK3nctTj9YxyxkuTCATJy",
+    "role": "USER",
+    "address": "qhbchjdbchjbdchjbdchjbdhjc",
+    "city": "vskp",
+    "state": "ap",
+    "pincode": "530015",
+    "createdAt": "2026-11-07T06:46:31.988731"
+  },
+  {
+    "name": "Kavitha Reddy",
+    "email": "kavitha@example.com",
+    "mobile": "9887766554",
+    "password": "$2b$12$KZFdgSAdezd151.cwCaiOOvRVwuov748/UJ6qRSUDAQ0renzTWq3i",
+    "role": "USER",
+    "address": "Banjara Hills",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "pincode": "500034",
+    "createdAt": "2026-11-07T06:45:18.982344"
+  },
+  {
+    "name": "Priya Sharma",
+    "email": "priya@example.com",
+    "mobile": "9876543210",
+    "password": "$2b$12$3CRYiaUXCJfG3hIfAWLHpueM/TT1/R8LJhuYQPo8PY75tgn5TpMY6",
+    "role": "USER",
+    "address": "123 Jubilee Hills",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "pincode": "500033",
+    "createdAt": "2026-11-08T06:43:32.807031",
+    "measurement": {
+      "bust": 36.5,
+      "waist": 30.0,
+      "shoulder": 14.5,
+      "blouseLength": 14.0,
+      "sleeveLength": 10.5,
+      "armhole": 15.0,
+      "frontNeck": 6.5,
+      "backNeck": 8.0,
+      "otherMeasurements": "Deep round back neck with dori"
+    }
+  },
+  {
+    "name": "Admin",
+    "email": "admin@blouse.com",
+    "mobile": null,
+    "password": "$2b$12$JfbzVX9c23qtwnibCcQSXeqmjG/mO/LHza2zQ0d5hU6rQ6iVUSs7m",
+    "role": "ADMIN",
+    "address": null,
+    "city": null,
+    "state": null,
+    "pincode": null,
+    "createdAt": "2026-11-07T06:14:31.695953"
+  }
+]
