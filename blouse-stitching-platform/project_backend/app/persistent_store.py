@@ -142,3 +142,34 @@ def save_user_to_registry(user: models.User, password_hash: str = None):
         data.append(user_dict)
 
     save_registry_data(data)
+
+def remove_user_from_registry(email: str, mobile: str = None):
+    """
+    Removes a deleted user from the persistent JSON file
+    so they are NOT resurrected on future container deploys or restarts.
+    """
+    data = load_registry_data()
+    clean_email = (email or "").strip().lower()
+    clean_mobile = (mobile or "").strip()
+
+    filtered = []
+    removed = False
+    for item in data:
+        item_email = (item.get("email") or "").strip().lower()
+        item_mobile = (item.get("mobile") or "").strip()
+
+        match = False
+        if clean_email and item_email == clean_email:
+            match = True
+        elif clean_mobile and item_mobile == clean_mobile:
+            match = True
+
+        if match:
+            removed = True
+        else:
+            filtered.append(item)
+
+    if removed:
+        save_registry_data(filtered)
+        print(f"Removed user {email} from persistent registry")
+    return removed

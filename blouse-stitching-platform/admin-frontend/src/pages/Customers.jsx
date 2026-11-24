@@ -7,8 +7,11 @@ function Customers() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerToDelete, setCustomerToDelete] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [feedbackMsg, setFeedbackMsg] = useState({ type: '', text: '' });
 
-  useEffect(() => {
+  const fetchCustomerData = () => {
     Promise.all([
       api.get('/admin/users'),
       api.get('/admin/orders')
@@ -22,7 +25,43 @@ function Customers() {
         console.error(err);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchCustomerData();
   }, []);
+
+  useEffect(() => {
+    if (feedbackMsg.text) {
+      const timer = setTimeout(() => setFeedbackMsg({ type: '', text: '' }), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [feedbackMsg]);
+
+  const executeDeleteCustomer = async () => {
+    if (!customerToDelete) return;
+    setDeletingId(customerToDelete.id);
+    try {
+      await api.delete(`/admin/users/${customerToDelete.id}`);
+      setCustomers(prev => prev.filter(c => c.id !== customerToDelete.id));
+      setFeedbackMsg({
+        type: 'success',
+        text: `Customer ${customerToDelete.name} (${customerToDelete.email}) was permanently deleted from the database.`
+      });
+      if (selectedCustomer && selectedCustomer.id === customerToDelete.id) {
+        setSelectedCustomer(null);
+      }
+      setCustomerToDelete(null);
+    } catch (err) {
+      console.error(err);
+      setFeedbackMsg({
+        type: 'error',
+        text: err.response?.data?.detail || 'Failed to delete customer from the database.'
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const getCustomerMetrics = (customerId, customerEmail) => {
     const userOrders = orders.filter(o => 
@@ -57,6 +96,31 @@ function Customers() {
           </p>
         </div>
       </div>
+
+      {/* Action Feedback Banner */}
+      {feedbackMsg.text && (
+        <div style={{
+          padding: '0.85rem 1.25rem',
+          marginBottom: '1.5rem',
+          borderRadius: '8px',
+          backgroundColor: feedbackMsg.type === 'success' ? '#F0FDF4' : '#FEF2F2',
+          border: `1px solid ${feedbackMsg.type === 'success' ? '#BBF7D0' : '#FECACA'}`,
+          color: feedbackMsg.type === 'success' ? '#166534' : '#991B1B',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontWeight: 500,
+          fontSize: '0.9rem'
+        }}>
+          <span>{feedbackMsg.type === 'success' ? '✓ ' : '✕ '}{feedbackMsg.text}</span>
+          <button 
+            onClick={() => setFeedbackMsg({ type: '', text: '' })} 
+            style={{background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: 'inherit'}}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Search Input */}
       <div className="card" style={{padding: '1rem 1.5rem', marginBottom: '1.5rem'}}>
@@ -148,13 +212,33 @@ function Customers() {
                         )}
                       </td>
                       <td style={{textAlign: 'right'}}>
-                        <button 
-                          className="btn btn-outline" 
-                          onClick={() => setSelectedCustomer({ ...c, metrics })}
-                          style={{padding: '0.35rem 0.75rem', fontSize: '0.8rem'}}
-                        >
-                          Profile 🔍
-                        </button>
+                        <div style={{display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', alignItems: 'center'}}>
+                          <button 
+                            className="btn btn-outline" 
+                            onClick={() => setSelectedCustomer({ ...c, metrics })}
+                            style={{padding: '0.35rem 0.65rem', fontSize: '0.8rem'}}
+                          >
+                            Profile 🔍
+                          </button>
+                          <button 
+                            className="btn" 
+                            onClick={() => setCustomerToDelete(c)}
+                            style={{
+                              padding: '0.35rem 0.65rem', 
+                              fontSize: '0.8rem', 
+                              backgroundColor: '#FEE2E2', 
+                              color: '#DC2626', 
+                              border: '1px solid #FCA5A5',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px'
+                            }}
+                            title="Permanently Delete Customer"
+                          >
+                            Delete 🗑️
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -230,19 +314,139 @@ function Customers() {
               </div>
             </div>
 
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: '1rem'}}>
-              {selectedCustomer.mobile ? (
-                <a 
-                  href={`https://wa.me/91${selectedCustomer.mobile.replace(/\D/g, '')}?text=Hello ${encodeURIComponent(selectedCustomer.name)}, this is Ammaji Fashions regarding your stitching order.`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-outline"
-                  style={{display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#16A34A', borderColor: '#16A34A', textDecoration: 'none'}}
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: '1rem', flexWrap: 'wrap', gap: '0.75rem'}}>
+              <div style={{display: 'flex', gap: '0.5rem', alignItems: 'center'}}>
+                {selectedCustomer.mobile ? (
+                  <a 
+                    href={`https://wa.me/91${selectedCustomer.mobile.replace(/\D/g, '')}?text=Hello ${encodeURIComponent(selectedCustomer.name)}, this is Ammaji Fashions regarding your stitching order.`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-outline"
+                    style={{display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#16A34A', borderColor: '#16A34A', textDecoration: 'none', fontSize: '0.85rem'}}
+                  >
+                    💬 WhatsApp
+                  </a>
+                ) : null}
+                <button 
+                  className="btn"
+                  onClick={() => setCustomerToDelete(selectedCustomer)}
+                  style={{
+                    backgroundColor: '#FEE2E2',
+                    color: '#DC2626',
+                    border: '1px solid #FCA5A5',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer'
+                  }}
                 >
-                  💬 Chat on WhatsApp
-                </a>
-              ) : <div />}
+                  Delete Customer 🗑️
+                </button>
+              </div>
               <button className="btn btn-primary" onClick={() => setSelectedCustomer(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRM DELETE CUSTOMER MODAL */}
+      {customerToDelete && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(3px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1100
+        }}>
+          <div className="card" style={{
+            width: '490px',
+            maxWidth: '92%',
+            margin: 0,
+            border: '1px solid #FCA5A5',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.25)',
+            borderRadius: '10px',
+            padding: '1.75rem'
+          }}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem'}}>
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '50%',
+                backgroundColor: '#FEE2E2',
+                color: '#DC2626',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.3rem',
+                fontWeight: 'bold'
+              }}>
+                ⚠️
+              </div>
+              <div>
+                <h3 style={{margin: 0, fontSize: '1.2rem', color: '#111827'}}>Permanently Delete Customer?</h3>
+                <p style={{margin: '0.2rem 0 0 0', fontSize: '0.82rem', color: '#6B7280'}}>
+                  This action is irreversible and deletes the user from the database.
+                </p>
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: '#FEF2F2',
+              border: '1px solid #FEE2E2',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginBottom: '1.25rem',
+              fontSize: '0.88rem'
+            }}>
+              <div style={{marginBottom: '0.4rem'}}>
+                <strong>Customer:</strong> {customerToDelete.name}
+              </div>
+              <div style={{marginBottom: '0.4rem'}}>
+                <strong>Email:</strong> {customerToDelete.email}
+              </div>
+              {customerToDelete.mobile && (
+                <div style={{marginBottom: '0.4rem'}}>
+                  <strong>Mobile:</strong> {customerToDelete.mobile}
+                </div>
+              )}
+              <div style={{color: '#991B1B', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 600}}>
+                Notice: All associated measurements, active login sessions, and order records for this customer will be removed from the database and permanent registry.
+              </div>
+            </div>
+
+            <div style={{display: 'flex', justifyContent: 'flex-end', gap: '0.75rem'}}>
+              <button 
+                type="button" 
+                className="btn btn-outline" 
+                onClick={() => setCustomerToDelete(null)}
+                disabled={deletingId === customerToDelete.id}
+                style={{padding: '0.6rem 1.2rem'}}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="btn" 
+                onClick={executeDeleteCustomer}
+                disabled={deletingId === customerToDelete.id}
+                style={{
+                  padding: '0.6rem 1.4rem', 
+                  backgroundColor: '#DC2626', 
+                  color: '#FFFFFF', 
+                  border: 'none',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  cursor: 'pointer'
+                }}
+              >
+                {deletingId === customerToDelete.id ? 'Deleting from DB...' : 'Confirm Delete 🗑️'}
+              </button>
             </div>
           </div>
         </div>

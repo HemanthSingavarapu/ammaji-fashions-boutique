@@ -85,9 +85,39 @@ def delete_user(
         raise HTTPException(status_code=400, detail="Admin cannot delete their own account")
     if user.role == "ADMIN":
         raise HTTPException(status_code=400, detail="Cannot delete an admin account")
+
+    user_email = user.email
+    user_mobile = user.mobile
+
+    # 1. Clean up user's active device sessions
+    db.query(models.UserSession).filter(models.UserSession.userId == user.id).delete()
+
+    # 2. Clean up user's wishlist items
+    db.query(models.WishlistItem).filter(models.WishlistItem.userId == user.id).delete()
+
+    # 3. Clean up user measurements
+    db.query(models.UserMeasurement).filter(models.UserMeasurement.userId == user.id).delete()
+
+    # 4. Clean up user orders and associated records
+    user_orders = db.query(models.Order).filter(models.Order.userId == user.id).all()
+    for o in user_orders:
+        db.query(models.Payment).filter(models.Payment.orderId == o.id).delete()
+        db.query(models.OrderStatusHistory).filter(models.OrderStatusHistory.orderId == o.id).delete()
+        db.query(models.Measurement).filter(models.Measurement.orderId == o.id).delete()
+        db.delete(o)
+
+    # 5. Delete user from the database
     db.delete(user)
     db.commit()
-    return Response(status_code=status.HTTP_200_OK)
+
+    # 6. Remove user from the persistent registry so they do not reappear on restart/deploy
+    try:
+        from app.persistent_store import remove_user_from_registry
+        remove_user_from_registry(user_email, user_mobile)
+    except Exception as e:
+        print(f"Persistent registry removal note: {e}")
+
+    return {"message": f"User {user_email} successfully and permanently deleted from database"}
 
 @router.put("/orders/{id}/status", response_model=schemas.OrderResponse)
 def update_order_status(
