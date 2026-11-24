@@ -8,6 +8,7 @@ function Catalogue() {
   const [designs, setDesigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [wishlist, setWishlist] = useState([]);
+  const [wishlistNotice, setWishlistNotice] = useState('');
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
@@ -20,7 +21,8 @@ function Catalogue() {
 
   const toggleWishlist = (id) => {
     if (!user) {
-      alert("Please login to save designs to your wishlist!");
+      setWishlistNotice("Please login or create an account to save designs to your wishlist.");
+      setTimeout(() => setWishlistNotice(''), 4000);
       return;
     }
     const isLiked = wishlist.includes(id);
@@ -68,6 +70,26 @@ function Catalogue() {
     <div className="section container">
       <div style={{marginBottom: '2.5rem'}}>
         <h2 className="section-title" style={{textAlign: 'center', margin: '0 0 2rem 0'}}>The <span>Collection</span></h2>
+        
+        {wishlistNotice && (
+          <div style={{
+            backgroundColor: '#FFFBEB',
+            border: '1px solid #FDE68A',
+            color: '#92400E',
+            padding: '0.85rem 1.25rem',
+            borderRadius: '8px',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontSize: '0.9rem'
+          }}>
+            <span>♡ {wishlistNotice}</span>
+            <Link to="/login" style={{color: 'var(--primary-color)', fontWeight: 700, textDecoration: 'underline'}}>
+              Login Now →
+            </Link>
+          </div>
+        )}
         
         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem'}}>
           <div className="categories-filter" style={{maxWidth: '100%', flex: '1 1 350px', minWidth: '0', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '0.5rem', scrollbarWidth: 'none'}}>

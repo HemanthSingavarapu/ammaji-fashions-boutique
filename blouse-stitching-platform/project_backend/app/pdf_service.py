@@ -144,8 +144,8 @@ def generate_invoice_pdf(order: models.Order) -> bytes:
     story.append(t_summary)
     story.append(Spacer(1, 30))
 
-    # Bank Details Note
-    bank_note = f"<b>Bank Transfer Details:</b> {settings.BANK_NAME} | A/C: {settings.BANK_ACCOUNT_NO} | IFSC: {settings.BANK_IFSC} | UPI: {settings.UPI_VPA}"
+    # Payment & Boutique Support Note
+    bank_note = f"<b>Official Boutique UPI:</b> {settings.UPI_VPA} ({settings.UPI_PAYEE_NAME}) | Helpline: +{settings.BOUTIQUE_PHONE}"
     story.append(Paragraph(bank_note, subtitle_style))
     story.append(Spacer(1, 10))
     story.append(Paragraph("Thank you for choosing Ammaji Fashions! For order queries, WhatsApp us at +91 83410 85629.", subtitle_style))
@@ -192,7 +192,8 @@ def generate_job_card_pdf(order: models.Order) -> bytes:
     # Generate QR Code image for the Order Tracking
     qr_buffer = io.BytesIO()
     qr = qrcode.QRCode(box_size=4, border=1)
-    qr.add_data(f"http://localhost:5180/track?orderId={order.orderNumber}")
+    tracking_link = f"{settings.FRONTEND_URL.rstrip('/')}/track?orderId={order.orderNumber}"
+    qr.add_data(tracking_link)
     qr.make(fit=True)
     qr_img = qr.make_image(fill_color="black", back_color="white")
     qr_img.save(qr_buffer, format="PNG")

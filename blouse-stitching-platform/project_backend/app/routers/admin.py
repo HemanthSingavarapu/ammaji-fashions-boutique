@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Response, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload, selectinload
 
@@ -89,6 +89,7 @@ def update_order_status(
     id: int,
     status: str = Query(...),
     comment: str = Query(...),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     admin: models.User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
@@ -108,9 +109,10 @@ def update_order_status(
     db.add(history)
     db.commit()
 
-    # Trigger email notification
+    # Trigger email notification asynchronously without blocking response
     if order.user and order.user.email:
-        send_order_status_update(
+        background_tasks.add_task(
+            send_order_status_update,
             to_email=order.user.email,
             customer_name=order.user.name or "Customer",
             order_number=order.orderNumber,
@@ -123,6 +125,7 @@ def update_order_status(
 @router.put("/orders/{id}/verify-payment", response_model=schemas.OrderResponse)
 def verify_payment(
     id: int,
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     admin: models.User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
@@ -150,7 +153,8 @@ def verify_payment(
     db.commit()
 
     if order.user and order.user.email:
-        send_order_status_update(
+        background_tasks.add_task(
+            send_order_status_update,
             to_email=order.user.email,
             customer_name=order.user.name or "Customer",
             order_number=order.orderNumber,
@@ -164,6 +168,7 @@ def verify_payment(
 def reject_payment(
     id: int,
     reason: str = Query("UTR reference not found in bank statement"),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     admin: models.User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
@@ -189,7 +194,8 @@ def reject_payment(
     db.commit()
 
     if order.user and order.user.email:
-        send_order_status_update(
+        background_tasks.add_task(
+            send_order_status_update,
             to_email=order.user.email,
             customer_name=order.user.name or "Customer",
             order_number=order.orderNumber,
@@ -251,6 +257,8 @@ def delete_category(
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
 
+    # Detach linked designs before deleting category to avoid foreign key errors
+    db.query(models.Design).filter(models.Design.categoryId == id).update({"categoryId": None})
     db.delete(cat)
     db.commit()
     return Response(status_code=status.HTTP_200_OK)

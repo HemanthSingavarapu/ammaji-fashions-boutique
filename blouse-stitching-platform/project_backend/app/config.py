@@ -7,6 +7,7 @@ class Settings:
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 # 24 hours
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./blouse.db")
     PORT: int = int(os.getenv("PORT", "8080"))
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "https://ammaji-fashions.vercel.app")
 
     # --- Feature 2: Bank & UPI Payment Details (Update these anytime!) ---
     UPI_VPA: str = os.getenv("UPI_VPA", "ammajifashions@upi")

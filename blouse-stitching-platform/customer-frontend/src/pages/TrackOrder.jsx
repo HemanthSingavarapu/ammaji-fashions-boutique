@@ -12,26 +12,22 @@ import api from '../services/api';
 
 function TrackOrder() {
   const location = useLocation();
-  const [orderId, setOrderId] = useState(location.state?.orderNumber || '');
+  const searchParams = new URLSearchParams(location.search);
+  const initialOrderId = location.state?.orderNumber || searchParams.get('orderId') || searchParams.get('orderNumber') || '';
+  const [orderId, setOrderId] = useState(initialOrderId);
   const [trackingData, setTrackingData] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (location.state?.orderNumber) {
-      handleTrack({ preventDefault: () => {} });
-    }
-  }, [location.state]);
+  const fetchTracking = async (idToTrack) => {
+    const cleanId = (idToTrack || orderId || '').trim();
+    if (!cleanId) return;
 
-  const handleTrack = async (e) => {
-    e.preventDefault();
-    if(!orderId.trim()) return;
-    
     setLoading(true);
     setError('');
     try {
-      const res = await api.get(`/orders/track/${orderId.trim()}`);
+      const res = await api.get(`/orders/track/${cleanId}`);
       setTrackingData(res.data);
     } catch (err) {
       setError('Order not found. Please verify your Order ID (e.g. BL202609060001).');
@@ -39,6 +35,19 @@ function TrackOrder() {
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    const target = location.state?.orderNumber || new URLSearchParams(location.search).get('orderId') || new URLSearchParams(location.search).get('orderNumber');
+    if (target) {
+      setOrderId(target);
+      fetchTracking(target);
+    }
+  }, [location]);
+
+  const handleTrack = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    fetchTracking(orderId);
   };
 
   const handleCopyOrderId = () => {

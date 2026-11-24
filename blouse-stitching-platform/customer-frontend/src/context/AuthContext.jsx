@@ -97,8 +97,8 @@ export const AuthProvider = ({ children }) => {
     window.addEventListener('focus', onFocus);
     document.addEventListener('visibilitychange', onVisibility);
 
-    // 2. Poll every 4 seconds in the background
-    const timer = setInterval(verifySession, 4000);
+    // 2. Poll every 30 seconds in background (tab focus / visibility handles immediate tab switching)
+    const timer = setInterval(verifySession, 30000);
 
     return () => {
       window.removeEventListener('focus', onFocus);

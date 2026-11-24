@@ -14,7 +14,7 @@ def clean_phone_number(phone: str) -> str:
 
 def generate_whatsapp_status_url(customer_phone: str, customer_name: str, order_number: str, new_status: str, comment: str = None) -> str:
     pretty_status = new_status.replace("_", " ").title()
-    tracking_url = f"http://localhost:5180/track?orderId={order_number}"
+    tracking_url = f"{settings.FRONTEND_URL.rstrip('/')}/track?orderId={order_number}"
     
     msg = (
         f"Hello {customer_name}! ✨\n\n"
@@ -44,9 +44,10 @@ def send_order_status_update(to_email: str, customer_name: str, order_number: st
     )
     if comment and comment.strip():
         body += f"Note from our team: {comment.strip()}\n\n"
+    tracking_url = f"{settings.FRONTEND_URL.rstrip('/')}/track?orderId={order_number}"
     body += (
         f"You can track your order live anytime at:\n"
-        f"http://localhost:5180/track?orderId={order_number}\n\n"
+        f"{tracking_url}\n\n"
         f"Thank you for shopping with us!\n"
         f"- The Ammaji Fashions & Boutique Team"
     )
@@ -60,7 +61,7 @@ def send_order_status_update(to_email: str, customer_name: str, order_number: st
             msg['Subject'] = subject
             msg.attach(MIMEText(body, 'plain'))
 
-            with smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT) as server:
+            with smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT, timeout=5) as server:
                 server.starttls()
                 server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
                 server.send_message(msg)

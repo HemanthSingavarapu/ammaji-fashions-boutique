@@ -79,7 +79,8 @@ function Orders() {
     const custName = selectedOrder.user?.name || 'Customer';
     const statusText = newStatus.replace(/_/g, ' ');
     const note = comment ? `\n📝 Note: ${comment}` : '';
-    const msg = `Hello ${custName}! ✨\n\nYour bespoke blouse order *#${selectedOrder.orderNumber}* has an update!\n🧵 Status: *${statusText}*${note}\n\n👉 Track live: http://localhost:5180/track?orderId=${selectedOrder.orderNumber}\n\n- Ammaji Fashions`;
+    const trackingBase = window.location.origin.includes('localhost') ? 'http://localhost:5180' : 'https://ammaji-fashions.vercel.app';
+    const msg = `Hello ${custName}! ✨\n\nYour bespoke blouse order *#${selectedOrder.orderNumber}* has an update!\n🧵 Status: *${statusText}*${note}\n\n👉 Track live: ${trackingBase}/track?orderId=${selectedOrder.orderNumber}\n\n- Ammaji Fashions`;
     return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   };
 
@@ -337,7 +338,7 @@ function Orders() {
                           </>
                         )}
                         <a 
-                          href={`http://localhost:8080/api/orders/${order.id}/job-card`}
+                          href={`${api.defaults.baseURL || '/api'}/orders/${order.id}/job-card`}
                           target="_blank" 
                           rel="noreferrer"
                           className="btn btn-outline" 
@@ -347,7 +348,7 @@ function Orders() {
                           📋 Job Card
                         </a>
                         <a 
-                          href={`http://localhost:8080/api/orders/${order.id}/invoice`}
+                          href={`${api.defaults.baseURL || '/api'}/orders/${order.id}/invoice`}
                           target="_blank" 
                           rel="noreferrer"
                           className="btn btn-outline" 
@@ -580,7 +581,7 @@ function Orders() {
 
             <div style={{display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', borderTop: '1px solid var(--border)', paddingTop: '1rem', flexWrap: 'wrap'}}>
               <a 
-                href={`http://localhost:8080/api/orders/${detailOrder.id}/job-card`}
+                href={`${api.defaults.baseURL || '/api'}/orders/${detailOrder.id}/job-card`}
                 target="_blank" 
                 rel="noreferrer"
                 className="btn btn-outline"
@@ -589,7 +590,7 @@ function Orders() {
                 📋 Job Card (PDF)
               </a>
               <a 
-                href={`http://localhost:8080/api/orders/${detailOrder.id}/invoice`}
+                href={`${api.defaults.baseURL || '/api'}/orders/${detailOrder.id}/invoice`}
                 target="_blank" 
                 rel="noreferrer"
                 className="btn btn-outline"

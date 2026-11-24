@@ -16,6 +16,9 @@ services:
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     pullRequestPreviewsEnabled: false
+    envVars:
+      - key: VITE_API_URL
+        value: https://ammaji-backend.onrender.com/api
     routes:
       - type: rewrite
         source: /*
@@ -28,6 +31,9 @@ services:
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     pullRequestPreviewsEnabled: false
+    envVars:
+      - key: VITE_API_URL
+        value: https://ammaji-backend.onrender.com/api
     routes:
       - type: rewrite
         source: /*

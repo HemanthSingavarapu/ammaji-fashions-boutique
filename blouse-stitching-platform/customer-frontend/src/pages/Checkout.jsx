@@ -25,16 +25,34 @@ function Checkout() {
   const [loading, setLoading] = useState(false);
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
+  const [customDraftMissing, setCustomDraftMissing] = useState(false);
   
   useEffect(() => {
-    if (id === 'custom' && customData) {
-      setDesign({
-        id: 'custom',
-        name: customData.customDesignName,
-        price: customData.price,
-        description: customData.customDesignDetails,
-        imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=800'
-      });
+    if (id === 'custom') {
+      let data = customData;
+      if (!data) {
+        try {
+          const cached = sessionStorage.getItem('custom_studio_draft');
+          if (cached) data = JSON.parse(cached);
+        } catch (e) {}
+      } else {
+        try {
+          sessionStorage.setItem('custom_studio_draft', JSON.stringify(customData));
+        } catch (e) {}
+      }
+
+      if (data && data.customDesignName) {
+        setDesign({
+          id: 'custom',
+          name: data.customDesignName,
+          price: data.price,
+          description: data.customDesignDetails,
+          imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=800'
+        });
+        setCustomDraftMissing(false);
+      } else {
+        setCustomDraftMissing(true);
+      }
       return;
     }
     if (id && id !== 'custom') {
@@ -134,8 +152,7 @@ function Checkout() {
   // 1. ENFORCE AUTHENTICATION
   useEffect(() => {
     if (!user) {
-      alert("You must login or register to place an order!");
-      navigate('/login');
+      navigate('/login?reason=checkout_auth');
     } else {
       setAddress(user.address || '');
       setPickupAddress(user.address || '');
@@ -149,8 +166,9 @@ function Checkout() {
         setTimeLeft(prev => prev - 1);
       }, 1000);
     } else if (step === 2 && timeLeft === 0) {
-      alert("Payment session expired.");
-      navigate('/');
+      setError("Payment session expired. Please review your order and select a payment method.");
+      setStep(1);
+      setTimeLeft(600);
     }
     return () => clearInterval(timer);
   }, [step, timeLeft, navigate]);
@@ -233,19 +251,23 @@ function Checkout() {
   };
 
   const handleCreateOrder = async () => {
+    setError('');
     // Basic validations
     if (!measurement) {
-      alert("Please provide your measurements or select a standard size.");
+      setError("Please provide your measurements or select a standard size.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     
     if (courierOption === 'BOUTIQUE' && differentPickup && !pickupAddress) {
-      alert("Please provide a pickup address.");
+      setError("Please provide a pickup address for your saree fabric collection.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     
     if (!address) {
-      alert("Please provide a delivery address.");
+      setError("Please provide a delivery address.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     
@@ -254,7 +276,8 @@ function Checkout() {
       setStep(2);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || "Failed to create order. Please try again.");
+      setError(err.response?.data?.message || err.response?.data?.detail || "Failed to create order. Please try again.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -339,10 +362,27 @@ function Checkout() {
       } else {
         msg = err.message || "Payment processing error. Please try again.";
       }
-      alert(`Payment Notice: ${msg}`);
+      setError(`Payment Notice: ${msg}`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       setLoading(false);
     }
   };
+
+  if (customDraftMissing) {
+    return (
+      <div className="container section" style={{ textAlign: 'center', padding: '5rem 1rem' }}>
+        <div className="card" style={{ maxWidth: '520px', margin: '0 auto', padding: '2.5rem' }}>
+          <h3 style={{ marginBottom: '1rem', color: 'var(--text-main)', fontSize: '1.4rem' }}>Custom Studio Session Not Found</h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: 1.6, fontSize: '0.95rem' }}>
+            The customized blouse configuration could not be restored after page refresh. Please open the Custom Studio to configure your blouse.
+          </p>
+          <Link to="/studio" className="btn btn-primary" style={{ padding: '0.85rem 1.75rem', textDecoration: 'none', display: 'inline-block' }}>
+            Open Custom Studio →
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!user || !design) {
     return (

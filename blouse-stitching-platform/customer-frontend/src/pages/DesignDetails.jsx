@@ -26,6 +26,7 @@ function DesignDetails() {
 
   // Wishlist state
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [wishlistNotice, setWishlistNotice] = useState('');
 
   useEffect(() => {
     api.get(`/designs/${id}`)
@@ -73,7 +74,8 @@ function DesignDetails() {
 
   const handleToggleWishlist = () => {
     if (!user) {
-      alert("Please login to save designs to your wishlist!");
+      setWishlistNotice("Please login or create an account to save designs to your wishlist.");
+      setTimeout(() => setWishlistNotice(''), 4000);
       return;
     }
     const nextState = !isWishlisted;
@@ -97,13 +99,33 @@ function DesignDetails() {
     <div className="container section" style={{maxWidth: '1100px', margin: '0 auto', paddingBottom: '4rem'}}>
       
       {/* Clean Breadcrumb */}
-      <nav style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '2rem'}}>
+      <nav style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem'}}>
         <Link to="/" style={{color: 'var(--text-muted)', textDecoration: 'none'}}>Home</Link>
         <span style={{margin: '0 0.5rem', opacity: 0.5}}>/</span>
         <Link to="/catalogue" style={{color: 'var(--text-muted)', textDecoration: 'none'}}>Catalogue</Link>
         <span style={{margin: '0 0.5rem', opacity: 0.5}}>/</span>
         <span style={{color: 'var(--text-main)', fontWeight: 500}}>{design.name}</span>
       </nav>
+
+      {wishlistNotice && (
+        <div style={{
+          backgroundColor: '#FFFBEB',
+          border: '1px solid #FDE68A',
+          color: '#92400E',
+          padding: '0.85rem 1.25rem',
+          borderRadius: '8px',
+          marginBottom: '2rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontSize: '0.9rem'
+        }}>
+          <span>♡ {wishlistNotice}</span>
+          <Link to="/login" style={{color: 'var(--primary-color)', fontWeight: 700, textDecoration: 'underline'}}>
+            Login Now →
+          </Link>
+        </div>
+      )}
 
       <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '3.5rem', alignItems: 'start'}}>
         

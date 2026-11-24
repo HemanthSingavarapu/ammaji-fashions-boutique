@@ -9,7 +9,7 @@ router = APIRouter(prefix="/api", tags=["catalogue"])
 
 @router.get("/categories", response_model=List[schemas.CategoryResponse])
 def get_categories(db: Session = Depends(get_db)):
-    return db.query(models.Category).filter(models.Category.active == True).all()
+    return db.query(models.Category).filter(models.Category.active == True).order_by(models.Category.name.asc()).all()
 
 @router.get("/categories/{id}", response_model=schemas.CategoryResponse)
 def get_category(id: int, db: Session = Depends(get_db)):
@@ -20,21 +20,21 @@ def get_category(id: int, db: Session = Depends(get_db)):
 
 @router.get("/designs", response_model=List[schemas.DesignResponse])
 def get_designs(db: Session = Depends(get_db)):
-    return db.query(models.Design).options(joinedload(models.Design.category)).filter(models.Design.active == True).all()
+    return db.query(models.Design).options(joinedload(models.Design.category)).filter(models.Design.active == True).order_by(models.Design.createdAt.desc()).all()
 
 @router.get("/designs/featured", response_model=List[schemas.DesignResponse])
 def get_featured_designs(db: Session = Depends(get_db)):
     return db.query(models.Design).options(joinedload(models.Design.category)).filter(
         models.Design.active == True,
         models.Design.featured == True
-    ).all()
+    ).order_by(models.Design.createdAt.desc()).all()
 
 @router.get("/designs/category/{category_id}", response_model=List[schemas.DesignResponse])
 def get_designs_by_category(category_id: int, db: Session = Depends(get_db)):
     return db.query(models.Design).options(joinedload(models.Design.category)).filter(
         models.Design.categoryId == category_id,
         models.Design.active == True
-    ).all()
+    ).order_by(models.Design.createdAt.desc()).all()
 
 @router.get("/designs/{id}", response_model=schemas.DesignResponse)
 def get_design(id: int, db: Session = Depends(get_db)):

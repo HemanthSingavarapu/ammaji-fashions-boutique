@@ -11,11 +11,9 @@ function Navbar() {
   const [showWishlistAuthModal, setShowWishlistAuthModal] = useState(false);
 
   const handleLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
-      logout();
-      setIsMobileMenuOpen(false);
-      navigate('/');
-    }
+    logout();
+    setIsMobileMenuOpen(false);
+    navigate('/');
   };
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);

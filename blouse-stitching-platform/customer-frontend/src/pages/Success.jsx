@@ -127,7 +127,7 @@ function Success() {
 
         <div style={{display: 'flex', gap: '0.6rem', flexWrap: 'wrap'}}>
           <a 
-            href={`http://localhost:8080/api/orders/${order.id}/invoice`} 
+            href={`${api.defaults.baseURL || '/api'}/orders/${order.id}/invoice`} 
             target="_blank" 
             rel="noreferrer" 
             className="btn btn-outline" 

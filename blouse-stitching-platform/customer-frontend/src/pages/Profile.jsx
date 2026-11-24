@@ -293,7 +293,7 @@ function Profile() {
                                 Invoice <ReceiptIcon size={13} />
                               </Link>
                               <a 
-                                href={`http://localhost:8080/api/orders/${order.id}/invoice`} 
+                                href={`${api.defaults.baseURL || '/api'}/orders/${order.id}/invoice`} 
                                 target="_blank" 
                                 rel="noreferrer"
                                 className="btn btn-outline" 

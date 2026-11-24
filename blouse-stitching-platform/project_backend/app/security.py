@@ -98,8 +98,11 @@ def get_current_user(
                 detail="Session expired or logged out from another device. Please log in again.",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        session_record.lastActive = datetime.utcnow()
-        db.commit()
+        # Only update lastActive in DB if more than 60s elapsed to prevent write-lock contention
+        now = datetime.utcnow()
+        if not session_record.lastActive or (now - session_record.lastActive).total_seconds() > 60:
+            session_record.lastActive = now
+            db.commit()
 
     return user
 
@@ -123,8 +126,10 @@ def get_optional_current_user(
             session_record = db.query(models.UserSession).filter(models.UserSession.token == token).first()
             if not session_record:
                 return None
-            session_record.lastActive = datetime.utcnow()
-            db.commit()
+            now = datetime.utcnow()
+            if not session_record.lastActive or (now - session_record.lastActive).total_seconds() > 60:
+                session_record.lastActive = now
+                db.commit()
 
         return user
     except Exception:

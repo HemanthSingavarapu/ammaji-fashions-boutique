@@ -26,8 +26,11 @@ def create_order(
     db: Session = Depends(get_db)
 ):
     date_str = datetime.now().strftime("%Y%m%d")
-    count = db.query(models.Order).count() + 1
-    order_number = f"BL{date_str}{count:04d}"
+    base_count = db.query(models.Order).count() + 1
+    order_number = f"BL{date_str}{base_count:04d}"
+    while db.query(models.Order).filter(models.Order.orderNumber == order_number).first():
+        base_count += 1
+        order_number = f"BL{date_str}{base_count:04d}"
 
     base_price = 0.0
     design = None
@@ -161,7 +164,7 @@ def delete_order(
         db.commit()
         return Response(status_code=status.HTTP_200_OK)
 
-    return PlainTextResponse("Cannot delete confirmed order", status_code=status.HTTP_400_BAD_REQUEST)
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete confirmed order")
 
 @router.post("/{id}/cancel", response_model=schemas.OrderResponse)
 def cancel_order(
@@ -212,7 +215,7 @@ def cancel_order(
 
         return get_order_query(db).filter(models.Order.id == order.id).first()
     else:
-        return PlainTextResponse("Order cannot be cancelled at this stage.", status_code=status.HTTP_400_BAD_REQUEST)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order cannot be cancelled at this stage.")
 
 @router.get("/{id}/invoice")
 def download_invoice(id: int, db: Session = Depends(get_db)):

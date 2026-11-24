@@ -129,7 +129,7 @@ def process_dummy_payment(
     """
     order = db.query(models.Order).filter(models.Order.id == orderId).first()
     if not order:
-        return PlainTextResponse("Order not found or session expired. Please refresh checkout.", status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found or session expired. Please refresh checkout.")
 
     effective_txn = transactionNumber
     if not effective_txn or not effective_txn.strip():

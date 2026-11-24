@@ -83,7 +83,7 @@ function AdminLayout() {
 
           <div style={{display: 'flex', alignItems: 'center', gap: '1.25rem'}}>
             <a 
-              href="http://localhost:5180" 
+              href={typeof window !== 'undefined' && window.location.origin.includes('localhost') ? 'http://localhost:5180' : 'https://ammaji-fashions.vercel.app'} 
               target="_blank" 
               rel="noreferrer" 
               className="btn btn-outline" 
